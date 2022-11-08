@@ -144,6 +144,53 @@ class UserController {
         res.status(400).send({ error: 'Could not read !!Please send valid PhoneNumber' });
     }
 
+    async updateUserDetails(req, res) {
+        var PhoneNumber = req.body.user.PhoneNumber;
+        try {
+            if (req.body.isSaved === true) {
+                var result = await Users.findOneAndUpdate({ PhoneNumber: PhoneNumber }, req.body.data); // CHECKING IF THE USER IS THERE OR NOT
+                if (result) {
+                    res.status(200).send({ Success: 'User saved', user: result });
+                }
+                else {
+                    res.status(400).send({ error: "Error occured while saving at backend" });
+                }
+            }
+            else {
+                res.status(200).send({ Success: 'User saved', user: req.body.user });
+            }
+        }
+        catch (error) {
+            console.log(error)
+            res.status(400).send({ error: 'Error occured at backend!!' });
 
+        }
+    }
+    async deleteUser(req, res) { //delete users
+        var PhoneNumber = req.body.user.PhoneNumber;
+        try {
+            var result = await Users.deleteOne({ PhoneNumber: PhoneNumber });
+            if (result) {
+                res.status(200).send({ msg: 'User deleted' });
+            }
+            else {
+                res.status(400).send({ error: "Error occured while saving at backend" });
+            }
+        }
+        catch (error) {
+            console.log(error)
+            res.status(400).send({ error: 'Error occured at backend!!' });
+        }
+    }
+
+    getUserDetails(req, res) {
+        try {
+            res.status(200).send(req.body.user);
+        }
+        catch (error) {
+            console.log(error);
+            res.status(400).send({ error: 'Error occured at backend!!' });
+        }
+    }
 }
 module.exports = new UserController();
