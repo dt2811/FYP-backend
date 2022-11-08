@@ -1,7 +1,7 @@
 const farmerRouter=require('express').Router();
 const AuthMiddleWare=require('../Middlewares/Auth');
-const NewFarmerPostingValidation=require('../Middlewares/Validation');
-const UpdateFarmerPostingValidation=require('../Middlewares/UpdateValidation');
+const NewFarmerPostingValidation=require('../Middlewares/NewFarmerPostingValidation');
+const UpdateFarmerPostingValidation=require('../Middlewares/UpdateFarmerPostingValidation');
 const FarmerPostingsController=require('../Controllers/FarmerPostings');
 
 farmerRouter.get('/get-farmerpost',FarmerPostingsController.getAllPosts);

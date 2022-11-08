@@ -22,10 +22,12 @@ class FarmerPostingsController {
                     });
                     result = await posting.save(); // ADDING USER AFTER VALIDATIONS
                     var tempArray = Array.from(req.body.user.Postings);
-                    tempArray.push(result._id);
-                    result = Users.findOneAndUpdate({ PhoneNumber: UserId }, { Postings: tempArray });
+                    var tempObj = Object.assign({}, result['_doc']);
+                    tempArray.push(tempObj['_id']);
+                    result = await Users.findOneAndUpdate({ PhoneNumber: UserId }, { Postings: tempArray });
                     if (result) {
-                        res.status(200).send({ message: 'Post succesfully', data: result });
+                        tempObj = Object.assign({}, result['_doc']);
+                        res.status(200).send({ message: 'Post succesfully', data: tempObj});
                         return;
                     }
                     else {
