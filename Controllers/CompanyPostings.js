@@ -1,29 +1,27 @@
-const FarmerPosting = require('../Models/FarmerPostings');
+const CompanyPosting=require('../Models/CompanyPostings');
 const Users = require('../Models/User');
 const Crops = require('../Models/Crop');
-class FarmerPostingsController {
+class CompanyPostingsController {
     async createNewPost(req, res) {  // Create new post
         try {
             var UserId = req.body.user.PhoneNumber;
             var CropId = req.body.CropId;
             var Details = req.body.Details;
             var Quantity = req.body.Quantity;
-            var ImageUrls = req.body.ImageUrls;
             var isValid = req.body.validation['isValid'];
             if (isValid === true) {
                 var result = await Crops.findById(CropId); // CHECKING IF THE CROP IS THERE OR NOT
                 if (result) {
-                    const posting = new FarmerPosting({
+                    const posting = new CompanyPosting({
                         UserId: UserId,
                         CropId: CropId,
                         Details: Details,
                         Quantity: Quantity,
-                        ImageUrls: ImageUrls
                     });
                     result = await posting.save(); // ADDING USER AFTER VALIDATIONS
-                    var tempArray = Array.from(req.body.user.Postings);
+                    var tempArray=Array.from(req.body.user.Postings);
                     tempArray.push(result._id);
-                    result = Users.findOneAndUpdate({ PhoneNumber: UserId }, { Postings: tempArray });
+                    result=Users.findOneAndUpdate({ PhoneNumber: UserId}, {Postings:tempArray});
                     if (result) {
                         res.status(200).send({ message: 'Post succesfully', data: result });
                         return;
@@ -50,7 +48,7 @@ class FarmerPostingsController {
         var id = req.body.data._id;
         try {
             if (req.body.isSaved === true && typeof (id) !== 'undefined') {
-                var result = await FarmerPosting.findOneAndUpdate({ _id: id }, req.body.data); // CHECKING IF THE USER IS THERE OR NOT
+                var result = await CompanyPosting.findOneAndUpdate({ _id: id }, req.body.data); // CHECKING IF THE USER IS THERE OR NOT
                 if (result) {
                     res.status(200).send({ Success: 'Post saved', post: result });
                 }
@@ -76,10 +74,10 @@ class FarmerPostingsController {
     async deletePost(req, res) { //delete post
         var id = req.body.data._id;
         try {
-            var result = await FarmerPosting.deleteOne({ _id: id });
-            var tempArray = Array.from(req.body.user.Postings);
+            var result = await CompanyPosting.deleteOne({ _id:id });
+            var tempArray=Array.from(req.body.user.Postings);
             tempArray.pop(result._id);
-            result = Users.findOneAndUpdate({ PhoneNumber: UserId }, { Postings: tempArray });
+            result=Users.findOneAndUpdate({ PhoneNumber: UserId}, {Postings:tempArray});
             if (result) {
                 res.status(200).send({ msg: 'post deleted' });
             }
@@ -88,14 +86,13 @@ class FarmerPostingsController {
             }
         }
         catch (error) {
-            console.log(error);
+            console.log(error)
             res.status(400).send({ error: 'Error occured at backend!!' });
         }
     }
-
     async getAllPosts(req, res) {
         try {
-            const result = await FarmerPosting.find();
+            const result = await CompanyPosting.find();
             let cropIds = []
             let userIds = []
             if (result.length > 0) {
@@ -145,5 +142,6 @@ class FarmerPostingsController {
             res.status(400).send({ error: 'Error occured at backend!!' });
         }
     }
+
 }
-module.exports = new FarmerPostingsController();
+module.exports = new CompanyPostingsController();

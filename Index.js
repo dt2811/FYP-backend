@@ -7,6 +7,9 @@ const rateLimit = require("express-rate-limit");
 const morgan = require("morgan");
 const moment = require("moment");
 const UserRoutes = require('./Routes/UserRoutes');
+const CompanyRoutes=require('./Routes/CompanyRoutes');
+const FarmerRoutes=require('./Routes/FarmerRoutes');
+const CropsRoutes=require('./Routes/CropsRoutes');
 const app = express();
 const PORT = process.env.PORT;
 const limiter = rateLimit({
@@ -35,7 +38,9 @@ app.use(
 );
 
 app.use(UserRoutes);
-
+app.use(CropsRoutes);
+app.use(CompanyRoutes);
+app.use(FarmerRoutes);
 app.get('/', (req, res) => {
     res.send('Welcome to FYP backend !!!!');
 });
