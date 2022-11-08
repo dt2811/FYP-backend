@@ -1,8 +1,7 @@
-const e = require('express');
 const Crops = require('../Models/Crop');
-class UserController {
+class CropController {
 
-    async registerNewUser(req, res) {  // REGISTER NEW USER
+    async registerNewCrop(req, res) {  // REGISTER NEW USER
         try {
             var Name = req.body.Name;
             var Description = req.body.Description;
@@ -29,7 +28,7 @@ class UserController {
             res.status(400).send({ error: 'Error occured at backend!!' });
         }
     }
-    async CropDetails(req, res) {
+    async updateCropDetails(req, res) {
         var id = req.body._id;
         try {
             if (req.body.isSaved === true) {
@@ -67,4 +66,4 @@ class UserController {
         }
     }
 }
-module.exports = new UserController();
+module.exports = new CropController ();

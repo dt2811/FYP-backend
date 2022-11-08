@@ -1,4 +1,4 @@
-function NewCompanyPostingValidation(req,res){
+function NewCompanyPostingValidation(req,res,next ){
     var CropId = req.body.CropId;
     var Details = req.body.Details;
     var Quantity=req.body.Quantity;

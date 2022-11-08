@@ -1,4 +1,4 @@
-function NewCropValidation(req,res){
+function NewCropValidation(req,res,next){
     var Name = req.body.Name;
     var Description = req.body.Description;
     var Images = req.body.Images;
@@ -48,5 +48,5 @@ else {
 }
 next();
 }
-
-module.exports = NewCropValidationMiddleware;
+ 
+module.exports = NewCropValidation;

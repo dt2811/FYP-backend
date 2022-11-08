@@ -4,8 +4,8 @@ const NewCompanyPostingValidation=require('../Middlewares/NewCompanyPostingValid
 const UpdateCompanyPostingValidation=require('../Middlewares/UpdateCompanyPostingValidation');
 const CompanyPostingsController=require('../Controllers/FarmerPostings');
 
-farmerRouter.get('/get-company-post',CompanyPostingsController.getAllPosts);
-farmerRouter.post('/create-company-post',AuthMiddleWare,NewCompanyPostingValidation,CompanyPostingsController.createNewPost);
-farmerRouter.put('/update-company-post',AuthMiddleWare,UpdateCompanyPostingValidation,CompanyPostingsController.updatePostDetails);
-farmerRouter.delete('/delete-company-post',AuthMiddleWare,CompanyPostingsController.deletePost);
+companyRouter.get('/get-company-post',CompanyPostingsController.getAllPosts);
+companyRouter.post('/create-company-post',AuthMiddleWare,NewCompanyPostingValidation,CompanyPostingsController.createNewPost);
+companyRouter.put('/update-company-post',AuthMiddleWare,UpdateCompanyPostingValidation,CompanyPostingsController.updatePostDetails);
+companyRouter.delete('/delete-company-post',AuthMiddleWare,CompanyPostingsController.deletePost);
 module.exports=companyRouter;
