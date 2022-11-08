@@ -1,26 +1,30 @@
 const Crops = require('../Models/Crop');
 class CropController {
 
-    async registerNewCrop(req, res) {  // REGISTER NEW USER
+    async registerNewCrop(req, res) {  // REGISTER NEW CROP
         try {
             var Name = req.body.Name;
             var Description = req.body.Description;
             var Images = req.body.Images;
             var isValid = req.body.validation['isValid'];
             if (isValid === true) {
-                    const crops = new Crops({
+                    var crops = new Crops({
                        Name:Name,
                        Description:Description,
                        Images:Images,
                     });
-                    result = await crops.save(); // ADDING crop AFTER VALIDATIONS
+                    
+                    var result = await crops.save(); // ADDING CROP AFTER VALIDATIONS
                     if (result) {
                         res.status(200).send({ message: 'Crop succesfully', data: result });
                         return;
                     }
-                    else {
-                        res.status(400).send(req.body.validation);
+                    else{
+                        res.status(400).send({ error: 'Error occured at backend!!' });
                     }
+                }
+                else {
+                    res.status(400).send(req.body.validation);
                 }
             }
         catch (error) {
@@ -53,9 +57,14 @@ class CropController {
 
     async getCropDetails(req, res) {
         try {
-            const results=Crops.find();
+            var results=await Crops.find();
+            var data=[]
             if(results){
-            res.status(200).send({data:results});}
+                results.forEach((result, index) => { // ADDING STATION DETAILS TO THE OBJECT
+                    var tempObj = Object.assign({}, result['_doc']);
+                    data.push(tempObj);
+                });
+            res.status(200).send({data:data});}
             else{
                 res.status(400).send({error:"Couldnt fetch"});
             }

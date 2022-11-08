@@ -27,7 +27,7 @@ if (typeof (Description) === "undefined" || Description.length <= 0) {
         message.missingFields.push("Description");
     }
 }
-if (typeof (Images) === "undefined" || Images.length <= 0) {
+if (typeof (Images) === "undefined" || Images.length < 0) {
     message.isValid = false;
     if (message.missingFields) {
         var temp = Array.from(message.missingFields);
