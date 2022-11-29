@@ -50,9 +50,10 @@ class FarmerPostingsController {
 
     async updatePostDetails(req, res) { //update posts
         var id = req.body.data._id;
+        var PhoneNumber=req.body.user.PhoneNumber;
         try {
             if (req.body.isSaved === true && typeof (id) !== 'undefined') {
-                var result = await FarmerPosting.findOneAndUpdate({ _id: id }, req.body.data); // CHECKING IF THE USER IS THERE OR NOT
+                var result = await FarmerPosting.findOneAndUpdate({ _id: id,UserID:PhoneNumber}, req.body.data); // CHECKING IF THE USER IS THERE OR NOT
                 if (result) {
                     res.status(200).send({ Success: 'Post saved', post: result });
                 }
@@ -100,6 +101,7 @@ class FarmerPostingsController {
             const result = await FarmerPosting.find();
             let cropIds = []
             let userIds = []
+            console.log(result.length);
             if (result.length > 0) {
                 result.forEach((info) => { // MANIPULATING THE STATIONS OBJECT
                     cropIds.push(info.CropId);
@@ -109,6 +111,8 @@ class FarmerPostingsController {
                 const cropDetails = await Crops.find({ _id: cropIds });
 
                 if (userDetails && cropDetails) {
+                    console.log(userDetails.length);
+                    console.log(cropDetails.length);
                     var tempData = [];
                     userDetails.forEach((user, index) => { // ADDING STATION DETAILS TO THE OBJECT
                         var tempObj = Object.assign({}, result[index]['_doc']);
@@ -122,7 +126,7 @@ class FarmerPostingsController {
                         delete tempUserDetails['PreviousOrders'];
                         delete tempUserDetails['CurrentOrders'];
                         delete tempUserDetails['Postings'];
-                        delete tempstation2['_id'];
+                        delete tempcrop['_id'];
                         delete tempcrop['updatedAt'];
                         delete tempcrop['createdAt'];
                         delete tempObj['UserId'];
