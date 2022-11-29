@@ -60,7 +60,7 @@ console.log(isvalidOTP);
         try {
             var FirstName = req.body.FirstName;
             var LastName = req.body.LastName;
-            var IsFarmer = req.body.IsFarmer;
+            var IsFarmer = req.body.IsFarmer ==="True";
             var Address = req.body.Address;
             var State = req.body.State;
             var City = req.body.City;
