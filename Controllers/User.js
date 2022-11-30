@@ -4,7 +4,8 @@ const bcrypt = require('bcrypt');
 const Users = require('../Models/User');
 require('dotenv').config();
 class UserController {
-
+    constructor(){
+        this.hashOtp="";}
     generateToken(PhoneNumber) { // GENERATE JWT TOKEN
         return jwt.sign({ PhoneNumber }, process.env.JWT_KEY, {
             expiresIn: '7d',
@@ -16,10 +17,11 @@ class UserController {
             let PhoneNumber = req.body.PhoneNumber;
             let otp = req.body.OTP;
             const regex = /^(\+91[\-\s]?)?[0]?(91)?[789]\d{9}$/;
+            console.log(req.cookies[PhoneNumber.toString()]);
             if (PhoneNumber && otp) {
-                if (regex.test(PhoneNumber) == true) {
-                    var isvalidOTP = bcrypt.compareSync(otp.toString(), req.cookies[PhoneNumber.toString()]) // COMPARING THE HASHED OTP WITH THE OTP SENT BY UER
-
+                if (regex.test(PhoneNumber) == true ) {
+                    var isvalidOTP = bcrypt.compareSync(otp.toString(),UserController.hashOtp) // COMPARING THE HASHED OTP WITH THE OTP SENT BY UER
+console.log(isvalidOTP);
                     if (isvalidOTP) {
                         var result = await Users.findOne({ PhoneNumber: PhoneNumber }); // FINDING IF THE USER IS THERE IN THE DB OR NOT
 
@@ -58,7 +60,7 @@ class UserController {
         try {
             var FirstName = req.body.FirstName;
             var LastName = req.body.LastName;
-            var IsFarmer = req.body.IsFarmer;
+            var IsFarmer = req.body.IsFarmer ==="True";
             var Address = req.body.Address;
             var State = req.body.State;
             var City = req.body.City;
@@ -114,20 +116,24 @@ class UserController {
 
     requestOtp(req, res) {  // SEND OTP AFTER VERIFYINH
         let PhoneNumber = req.body.PhoneNumber;
+        console.log(req.body);
         const regex = /^(\+91[\-\s]?)?[0]?(91)?[789]\d{9}$/;
         if (PhoneNumber) {
             if (regex.test(PhoneNumber) == true) {
                 var otp = Math.floor(1000 + Math.random() * 9000).toString();
-                var isOTPSent = true//sendOtp( PhoneNumber, otp);  // OTP FUNCTION
+                // var isOTPSent = true
+                sendOtp( PhoneNumber, otp);  // OTP FUNCTION
                 if (isOTPSent) {
                     var hash = bcrypt.hashSync(otp, 10); // HASHING THE OTP 
 
                     let options = {
+                        samesite:'none',
                         maxAge: 1000 * 60 * 5, // would expire after 5 minutes
-                        httpOnly: true, // The cookie only accessible by the web server
-                        // Indicates if the cookie should be signed
+                        httpOnly: false, // The cookie only accessible by the web server
+                        secure:false// Indicates if the cookie should be signed
                     }
                     res.clearCookie(PhoneNumber.toString());
+                    UserController.hashOtp=hash;
                     res.cookie(PhoneNumber.toString(), hash, options) // ADDING THE OTP IN COOKIE FOR T MINUTES
                     console.log(otp);
                     res.status(200).send({ message: 'OTP sent sucessfully !!' })

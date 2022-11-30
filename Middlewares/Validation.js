@@ -123,7 +123,7 @@ async function ValidationMiddleware(req, res, next) {
         }
 
     }
-    if (typeof (IsFarmer) !== 'boolean') {
+   /* if (typeof (IsFarmer) !== 'boolean') {
         message.isValid = false;
         if (message.missingFields) {
             var temp = Array.from(message.missingFields);
@@ -151,7 +151,7 @@ async function ValidationMiddleware(req, res, next) {
 
             }
         }
-    }
+    }*/
     if (Object.keys(message).length === 0) {
         message.isValid = true;
         req.body.validation = message;

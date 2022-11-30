@@ -46,9 +46,10 @@ class CompanyPostingsController {
 
     async updatePostDetails(req, res) { //update posts
         var id = req.body.data._id;
+        var PhoneNumber=req.body.user.PhoneNumber;
         try {
             if (req.body.isSaved === true && typeof (id) !== 'undefined') {
-                var result = await CompanyPosting.findOneAndUpdate({ _id: id }, req.body.data); // CHECKING IF THE USER IS THERE OR NOT
+                var result = await CompanyPosting.findOneAndUpdate({ _id: id,UserID:PhoneNumber}, req.body.data); // CHECKING IF THE USER IS THERE OR NOT
                 if (result) {
                     res.status(200).send({ Success: 'Post saved', post: result });
                 }
