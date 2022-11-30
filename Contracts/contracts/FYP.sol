@@ -38,7 +38,7 @@ contract FYP {
         int256 cropPrice,
         int256 storeLatitude,
         int256 storeLongitude
-    ) public {
+    ) public returns(int256) {
         TransactionLedger[transactions] = Transaction({
             transactionID: transactions,
             farmerAddress: 0x0000000000000000000000000000000000000000,
@@ -56,6 +56,7 @@ contract FYP {
             transactionStatus: TransactionStatus.Requested
         });
         transactions += 1;
+        return transactions;
     }
 
     function initTransactionBlockFarmer(
@@ -65,7 +66,7 @@ contract FYP {
         int256 cropPrice,
         int256 farmerLatitude,
         int256 farmerLongitude
-    ) public {
+    ) public returns(int256){
         TransactionLedger[transactions] = Transaction({
             transactionID: transactions,
             farmerAddress: msg.sender,
@@ -83,6 +84,7 @@ contract FYP {
             transactionStatus: TransactionStatus.Requested
         });
         transactions += 1;
+        return transactions;
     }
 
     function farmerAcceptRequest(
