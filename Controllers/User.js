@@ -122,7 +122,7 @@ console.log(isvalidOTP);
             if (regex.test(PhoneNumber) == true) {
                 var otp = Math.floor(1000 + Math.random() * 9000).toString();
                 // var isOTPSent = true
-                sendOtp( PhoneNumber, otp);  // OTP FUNCTION
+                var isOTPSent =sendOtp( PhoneNumber, otp);  // OTP FUNCTION
                 if (isOTPSent) {
                     var hash = bcrypt.hashSync(otp, 10); // HASHING THE OTP 
 
