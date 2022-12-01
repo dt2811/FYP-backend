@@ -2,10 +2,12 @@ var jwt = require('jsonwebtoken');
 const sendOtp = require('../Utils/OTP');
 const bcrypt = require('bcrypt');
 const Users = require('../Models/User');
+const OTPModel = require('../Models/OTP');
 require('dotenv').config();
 class UserController {
-    constructor(){
-        this.hashOtp="";}
+    constructor() {
+        this.hashOtp = "";
+    }
     generateToken(PhoneNumber) { // GENERATE JWT TOKEN
         return jwt.sign({ PhoneNumber }, process.env.JWT_KEY, {
             expiresIn: '7d',
@@ -17,30 +19,39 @@ class UserController {
             let PhoneNumber = req.body.PhoneNumber;
             let otp = req.body.OTP;
             const regex = /^(\+91[\-\s]?)?[0]?(91)?[789]\d{9}$/;
-            console.log(req.cookies[PhoneNumber.toString()]);
             if (PhoneNumber && otp) {
-                if (regex.test(PhoneNumber) == true ) {
-                    var isvalidOTP = bcrypt.compareSync(otp.toString(),UserController.hashOtp) // COMPARING THE HASHED OTP WITH THE OTP SENT BY UER
-console.log(isvalidOTP);
-                    if (isvalidOTP) {
-                        var result = await Users.findOne({ PhoneNumber: PhoneNumber }); // FINDING IF THE USER IS THERE IN THE DB OR NOT
+                if (regex.test(PhoneNumber) == true) {
+                    var OtpResponse = await OTPModel.findOne({ PhoneNumber: PhoneNumber })
+                    if (OtpResponse) {
+                        var isvalidOTP = bcrypt.compareSync(otp.toString(), UserController.hashOtp) // COMPARING THE HASHED OTP WITH THE OTP SENT BY UER
+                        if (isvalidOTP) {
 
-                        if (result) {
-                            var token = new UserController().generateToken(PhoneNumber); // GENERATING AUTH TOKEN FOR FURTHER OTP VERIFICATION
-                            res.status(200).send({ message: 'OTP verified', data: result, token: token });
+                            var deleteOtp = await OTPModel.deleteOne({ PhoneNumber: PhoneNumber });
+                            if (deleteOtp) {
+
+                                var result = await Users.findOne({ PhoneNumber: PhoneNumber }); // FINDING IF THE USER IS THERE IN THE DB OR NOT
+
+                                if (result) {
+                                    var token = new UserController().generateToken(PhoneNumber); // GENERATING AUTH TOKEN FOR FURTHER OTP VERIFICATION
+                                    res.status(200).send({ message: 'OTP verified', data: result, token: token });
+                                }
+                                else {
+                                    res.status(400).send({ error: 'User not regsitered' });
+                                }
+                            }
+                            else {
+                                res.status(400).send({ error: 'Error occured' });
+                            }
                         }
                         else {
-                            res.status(400).send({ error: 'User not regsitered' });
+                            res.status(400).send({ error: 'Please send valid OTP' });
                         }
+                        return;
                     }
-
                     else {
-                        res.status(400).send({ error: 'Please send valid OTP' });
+                        res.status(400).send({ error: 'Please Request OTP' });
                     }
-                    return;
                 }
-
-
                 else {
                     res.status(400).send({ error: 'Please send valid PhoneNumber' });
                     return;
@@ -60,7 +71,7 @@ console.log(isvalidOTP);
         try {
             var FirstName = req.body.FirstName;
             var LastName = req.body.LastName;
-            var IsFarmer = req.body.IsFarmer ==="True";
+            var IsFarmer = req.body.IsFarmer === "True";
             var Address = req.body.Address;
             var State = req.body.State;
             var City = req.body.City;
@@ -114,35 +125,54 @@ console.log(isvalidOTP);
     }
 
 
-    requestOtp(req, res) {  // SEND OTP AFTER VERIFYINH
+    async requestOtp(req, res) {  // SEND OTP AFTER VERIFYINH
         let PhoneNumber = req.body.PhoneNumber;
         console.log(req.body);
         const regex = /^(\+91[\-\s]?)?[0]?(91)?[789]\d{9}$/;
         if (PhoneNumber) {
             if (regex.test(PhoneNumber) == true) {
                 var otp = Math.floor(1000 + Math.random() * 9000).toString();
-                // var isOTPSent = true
-                var isOTPSent =sendOtp( PhoneNumber, otp);  // OTP FUNCTION
+                var isOTPSent = true
+                // var isOTPSent =sendOtp( PhoneNumber, otp);  // OTP FUNCTION
+                console.log(isOTPSent);
                 if (isOTPSent) {
                     var hash = bcrypt.hashSync(otp, 10); // HASHING THE OTP 
 
-                    let options = {
-                        samesite:'none',
-                        maxAge: 1000 * 60 * 5, // would expire after 5 minutes
-                        httpOnly: false, // The cookie only accessible by the web server
-                        secure:false// Indicates if the cookie should be signed
-                    }
-                    res.clearCookie(PhoneNumber.toString());
-                    UserController.hashOtp=hash;
-                    res.cookie(PhoneNumber.toString(), hash, options) // ADDING THE OTP IN COOKIE FOR T MINUTES
+                    UserController.hashOtp = hash;
+                    //res.cookie(PhoneNumber.toString(), hash, options) // ADDING THE OTP IN COOKIE FOR T MINUTES
                     console.log(otp);
-                    res.status(200).send({ message: 'OTP sent sucessfully !!' })
-                    return;
+                    try {
+                        var otp = new OTPModel({ PhoneNumber: PhoneNumber, OTP: otp });
+                        var result = await otp.save();
+                        if (result) {
+                            res.status(200).send({ message: 'OTP sent sucessfully !!' })
+                        }
+                        else {
+
+                            res.status(400).send({ error: 'Could not send OTP error occured!!' });
+
+                        }
+                        return;
+
+                    }
+                    catch (error) {
+                        // console.log(error);
+                        var deleteOtp = await OTPModel.deleteOne({ PhoneNumber: PhoneNumber });
+                        if (deleteOtp) {
+                            res.status(400).send({ error: 'Try Again !!' });
+                        }
+                        else {
+                            console.log(error);
+                            res.status(400).send({ error: 'Could not send OTP error occured!!' });
+                        }
+                    }
                 }
                 else {
                     res.status(400).send({ error: 'Could not send OTP error occured!!' });
                     return;
                 }
+
+
             }
             res.status(400).send({ error: 'Please send valid PhoneNumber' });
             return;
