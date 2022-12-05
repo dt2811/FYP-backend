@@ -1,6 +1,7 @@
 const FarmerPosting = require('../Models/FarmerPostings');
 const Users = require('../Models/User');
 const Crops = require('../Models/Crop');
+const { AddOnResultList } = require('twilio/lib/rest/api/v2010/account/recording/addOnResult');
 class FarmerPostingsController {
     async createNewPost(req, res) {  // Create new post
         try {
@@ -103,21 +104,21 @@ class FarmerPostingsController {
             let userIds = []
             console.log(result.length);
             if (result.length > 0) {
-                result.forEach((info) => { // MANIPULATING THE STATIONS OBJECT
-                    cropIds.push(info.CropId);
-                    userIds.push(info.UserId);
-                });
-                const userDetails = await Users.find({ PhoneNumber: userIds });
-                const cropDetails = await Crops.find({ _id: cropIds });
-
-                if (userDetails && cropDetails) {
-                    console.log(userDetails.length);
-                    console.log(cropDetails.length);
+               for(let i=0;i<result.length;i++) { // MANIPULATING THE STATIONS OBJECT
+                    const userDetails = await Users.find({ PhoneNumber:  result[i].UserId});
+                     const cropDetails = await Crops.find({ _id: result[i].CropId});
+                     if (userDetails && cropDetails) {
+                     cropIds.push(cropDetails[0]);
+                     userIds.push(userDetails[0]);
+                    }
+                }
+               // console.log(cropIds);
                     var tempData = [];
-                    userDetails.forEach((user, index) => { // ADDING STATION DETAILS TO THE OBJECT
+                    userIds.forEach((user, index) => { // ADDING STATION DETAILS TO THE OBJECT
                         var tempObj = Object.assign({}, result[index]['_doc']);
                         var tempUserDetails = Object.assign({}, user['_doc']);
-                        var tempcrop = Object.assign({}, cropDetails[index]['_doc'])
+
+                        var tempcrop = Object.assign({}, cropIds[index]['_doc'])
                         delete tempUserDetails['_id'];
                         delete tempUserDetails['updatedAt'];
                         delete tempUserDetails['createdAt'];
@@ -134,17 +135,14 @@ class FarmerPostingsController {
                         delete tempObj['_id'];
                         delete tempObj['PhoneNumber'];
                         delete tempObj['updatedAt'];
+    
                         tempObj['Farmer'] = tempUserDetails;
                         tempObj['CropDetails'] = tempcrop;
                         tempData.push(tempObj);
                     });
+                    //console.log("data is",tempData);
                     res.status(200).send({ data: tempData });
                 }
-            }
-            else {
-                res.status(400).send({ error: 'Error occured !!' });
-                return;
-            }
         }
         catch (error) {
             console.log(error)

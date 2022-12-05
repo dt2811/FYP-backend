@@ -5,9 +5,7 @@ const Users = require('../Models/User');
 const OTPModel = require('../Models/OTP');
 require('dotenv').config();
 class UserController {
-    constructor() {
-        this.hashOtp = "";
-    }
+   
     generateToken(PhoneNumber) { // GENERATE JWT TOKEN
         return jwt.sign({ PhoneNumber }, process.env.JWT_KEY, {
             expiresIn: '7d',
@@ -21,9 +19,10 @@ class UserController {
             const regex = /^(\+91[\-\s]?)?[0]?(91)?[789]\d{9}$/;
             if (PhoneNumber && otp) {
                 if (regex.test(PhoneNumber) == true) {
+                  
                     var OtpResponse = await OTPModel.findOne({ PhoneNumber: PhoneNumber })
                     if (OtpResponse) {
-                        var isvalidOTP = bcrypt.compareSync(otp.toString(), UserController.hashOtp) // COMPARING THE HASHED OTP WITH THE OTP SENT BY UER
+                        var isvalidOTP = bcrypt.compareSync(otp.toString(), OtpResponse['OTP'].toString()) // COMPARING THE HASHED OTP WITH THE OTP SENT BY UER
                         if (isvalidOTP) {
 
                             var deleteOtp = await OTPModel.deleteOne({ PhoneNumber: PhoneNumber });
@@ -132,17 +131,17 @@ class UserController {
         if (PhoneNumber) {
             if (regex.test(PhoneNumber) == true) {
                 var otp = Math.floor(1000 + Math.random() * 9000).toString();
-                var isOTPSent = true
-                // var isOTPSent =sendOtp( PhoneNumber, otp);  // OTP FUNCTION
+                //var isOTPSent = true
+                 var isOTPSent =sendOtp( PhoneNumber, otp);  // OTP FUNCTION
                 console.log(isOTPSent);
                 if (isOTPSent) {
                     var hash = bcrypt.hashSync(otp, 10); // HASHING THE OTP 
 
-                    UserController.hashOtp = hash;
+                   
                     //res.cookie(PhoneNumber.toString(), hash, options) // ADDING THE OTP IN COOKIE FOR T MINUTES
                     console.log(otp);
                     try {
-                        var otp = new OTPModel({ PhoneNumber: PhoneNumber, OTP: otp });
+                        var otp = new OTPModel({ PhoneNumber: PhoneNumber, OTP: hash});
                         var result = await otp.save();
                         if (result) {
                             res.status(200).send({ message: 'OTP sent sucessfully !!' })

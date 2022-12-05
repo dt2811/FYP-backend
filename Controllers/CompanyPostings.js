@@ -97,41 +97,50 @@ class CompanyPostingsController {
             let cropIds = []
             let userIds = []
             if (result.length > 0) {
-                result.forEach((info) => { // MANIPULATING THE STATIONS OBJECT
-                    cropIds.push(info.CropId);
-                    userIds.push(info.UserId);
-                });
-                const userDetails = await Users.find({ PhoneNumber: userIds });
-                const cropDetails = await Crops.find({ _id: cropIds });
-
-                if (userDetails && cropDetails) {
-                    var tempData = [];
-                    userDetails.forEach((user, index) => { // ADDING STATION DETAILS TO THE OBJECT
-                        var tempObj = Object.assign({}, result[index]['_doc']);
-                        var tempUserDetails = Object.assign({}, user['_doc']);
-                        var tempcrop = Object.assign({}, cropDetails[index]['_doc'])
-                        delete tempUserDetails['_id'];
-                        delete tempUserDetails['updatedAt'];
-                        delete tempUserDetails['createdAt'];
-                        delete tempUserDetails['EthId'];
-                        delete tempUserDetails['CompanyName'];
-                        delete tempUserDetails['PreviousOrders'];
-                        delete tempUserDetails['CurrentOrders'];
-                        delete tempUserDetails['Postings'];
-                        delete tempstation2['_id'];
-                        delete tempcrop['updatedAt'];
-                        delete tempcrop['createdAt'];
-                        delete tempObj['UserId'];
-                        delete tempObj['CropId'];
-                        delete tempObj['_id'];
-                        delete tempObj['PhoneNumber'];
-                        delete tempObj['updatedAt'];
-                        tempObj['Farmer'] = tempUserDetails;
-                        tempObj['CropDetails'] = tempcrop;
-                        tempData.push(tempObj);
-                    });
-                    res.status(200).send({ data: tempData });
-                }
+              
+                let cropIds = []
+                let userIds = []
+                console.log(result.length);
+                if (result.length > 0) {
+                   for(let i=0;i<result.length;i++) { // MANIPULATING THE STATIONS OBJECT
+                        const userDetails = await Users.find({ PhoneNumber:  result[i].UserId});
+                         const cropDetails = await Crops.find({ _id: result[i].CropId});
+                         if (userDetails && cropDetails) {
+                         cropIds.push(cropDetails[0]);
+                         userIds.push(userDetails[0]);
+                        }
+                    }
+                   // console.log(cropIds);
+                        var tempData = [];
+                        userIds.forEach((user, index) => { // ADDING STATION DETAILS TO THE OBJECT
+                            var tempObj = Object.assign({}, result[index]['_doc']);
+                            var tempUserDetails = Object.assign({}, user['_doc']);
+    
+                            var tempcrop = Object.assign({}, cropIds[index]['_doc'])
+                            delete tempUserDetails['_id'];
+                            delete tempUserDetails['updatedAt'];
+                            delete tempUserDetails['createdAt'];
+                            delete tempUserDetails['EthId'];
+                            delete tempUserDetails['CompanyName'];
+                            delete tempUserDetails['PreviousOrders'];
+                            delete tempUserDetails['CurrentOrders'];
+                            delete tempUserDetails['Postings'];
+                            delete tempcrop['_id'];
+                            delete tempcrop['updatedAt'];
+                            delete tempcrop['createdAt'];
+                            delete tempObj['UserId'];
+                            delete tempObj['CropId'];
+                            delete tempObj['_id'];
+                            delete tempObj['PhoneNumber'];
+                            delete tempObj['updatedAt'];
+        
+                            tempObj['Farmer'] = tempUserDetails;
+                            tempObj['CropDetails'] = tempcrop;
+                            tempData.push(tempObj);
+                        });
+                        //console.log("data is",tempData);
+                        res.status(200).send({ data: tempData });
+                    }
             }
             else {
                 res.status(400).send({ error: 'Error occured !!' });
