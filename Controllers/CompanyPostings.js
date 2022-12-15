@@ -73,12 +73,13 @@ class CompanyPostingsController {
         }
     }
     async deletePost(req, res) { //delete post
-        var id = req.body.data._id;
+        var id = req.body._id;
+        var PhoneNumber=req.body.user.PhoneNumber;
         try {
             var result = await CompanyPosting.deleteOne({ _id:id });
-            var tempArray=Array.from(req.body.user.Postings);
+            var tempArray = Array.from(req.body.user.Postings);
             tempArray.pop(result._id);
-            result=Users.findOneAndUpdate({ PhoneNumber: UserId}, {Postings:tempArray});
+            result = Users.findOneAndUpdate({ PhoneNumber: PhoneNumber }, { Postings: tempArray });
             if (result) {
                 res.status(200).send({ msg: 'post deleted' });
             }
