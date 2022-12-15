@@ -9,4 +9,5 @@ userrouter.post('/login-signup',UserController.verifyOtp);
 userrouter.post('/register',ValidationMiddleware,UserController.registerNewUser);
 userrouter.post('/update-user',AuthMiddleWare,UpdateValidationMiddleware,UserController.updateUserDetails);
 userrouter.get('/get-user',AuthMiddleWare,UserController.getUserDetails);
+userrouter.get('/get-my-posts',AuthMiddleWare,UserController.getMypost);
 module.exports=userrouter;

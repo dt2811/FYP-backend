@@ -11,7 +11,7 @@ async function UpdateCompanyPostingValidationMiddleware(req, res, next) {
         message.CropId = CropId;
     }
     if (typeof (Details) !== "undefined" && Details.length >= 0) {
-        message.CropId = Details;
+        message.Details = Details;
     }
     if (typeof (Quantity) !== "undefined" && Quantity.length >= 0) {
         message.Quantity = Quantity;

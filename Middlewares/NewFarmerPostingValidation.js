@@ -3,6 +3,7 @@ function NewFarmerPostingValidation(req,res,next){
     var Details = req.body.Details;
     var Quantity=req.body.Quantity;
     var ImageUrls = req.body.ImageUrls;
+    console.log(req.body);
     var message = {};
 if (typeof (Details) === "undefined" || Details.length <= 0) {
     message.isValid = false;
@@ -57,6 +58,7 @@ if (Object.keys(message).length === 0) {
     req.body.validation = message;
 }
 else {
+    console.log(message);
     req.body.validation = message;
 }
 next();

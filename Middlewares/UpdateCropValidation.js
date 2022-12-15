@@ -7,7 +7,7 @@ async function UpdateCropValidationMiddleware(req, res, next) {
       message.Name=Name;
     }
     if (typeof (Description) !== "undefined" && Description.length >= 0) {
-        message.Name=Description;
+        message.Description=Description;
     }
     if (typeof (Images) !== "undefined" && Images.length >= 0) {
         message.Images=Images;

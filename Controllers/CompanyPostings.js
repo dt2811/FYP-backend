@@ -45,7 +45,7 @@ class CompanyPostingsController {
     }
 
     async updatePostDetails(req, res) { //update posts
-        var id = req.body.data._id;
+        var id = req.body.data.postId;
         var PhoneNumber=req.body.user.PhoneNumber;
         try {
             if (req.body.isSaved === true && typeof (id) !== 'undefined') {
@@ -130,11 +130,10 @@ class CompanyPostingsController {
                             delete tempcrop['createdAt'];
                             delete tempObj['UserId'];
                             delete tempObj['CropId'];
-                            delete tempObj['_id'];
                             delete tempObj['PhoneNumber'];
                             delete tempObj['updatedAt'];
         
-                            tempObj['Farmer'] = tempUserDetails;
+                            tempObj['User'] = tempUserDetails;
                             tempObj['CropDetails'] = tempcrop;
                             tempData.push(tempObj);
                         });

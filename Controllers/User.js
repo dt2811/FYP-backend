@@ -3,9 +3,12 @@ const sendOtp = require('../Utils/OTP');
 const bcrypt = require('bcrypt');
 const Users = require('../Models/User');
 const OTPModel = require('../Models/OTP');
+const FarmerPosting = require('../Models/FarmerPostings');
+const CompanyPosting=require('../Models/CompanyPostings');
+const Crops = require('../Models/Crop');
 require('dotenv').config();
 class UserController {
-   
+
     generateToken(PhoneNumber) { // GENERATE JWT TOKEN
         return jwt.sign({ PhoneNumber }, process.env.JWT_KEY, {
             expiresIn: '7d',
@@ -19,7 +22,7 @@ class UserController {
             const regex = /^(\+91[\-\s]?)?[0]?(91)?[789]\d{9}$/;
             if (PhoneNumber && otp) {
                 if (regex.test(PhoneNumber) == true) {
-                  
+
                     var OtpResponse = await OTPModel.findOne({ PhoneNumber: PhoneNumber })
                     if (OtpResponse) {
                         var isvalidOTP = bcrypt.compareSync(otp.toString(), OtpResponse['OTP'].toString()) // COMPARING THE HASHED OTP WITH THE OTP SENT BY UER
@@ -132,16 +135,16 @@ class UserController {
             if (regex.test(PhoneNumber) == true) {
                 var otp = Math.floor(1000 + Math.random() * 9000).toString();
                 //var isOTPSent = true
-                 var isOTPSent =sendOtp( PhoneNumber, otp);  // OTP FUNCTION
+                var isOTPSent = sendOtp(PhoneNumber, otp);  // OTP FUNCTION
                 console.log(isOTPSent);
                 if (isOTPSent) {
                     var hash = bcrypt.hashSync(otp, 10); // HASHING THE OTP 
 
-                   
+
                     //res.cookie(PhoneNumber.toString(), hash, options) // ADDING THE OTP IN COOKIE FOR T MINUTES
                     console.log(otp);
                     try {
-                        var otp = new OTPModel({ PhoneNumber: PhoneNumber, OTP: hash});
+                        var otp = new OTPModel({ PhoneNumber: PhoneNumber, OTP: hash });
                         var result = await otp.save();
                         if (result) {
                             res.status(200).send({ message: 'OTP sent sucessfully !!' })
@@ -227,5 +230,115 @@ class UserController {
             res.status(400).send({ error: 'Error occured at backend!!' });
         }
     }
+
+    async getMypost(req, res) {
+        try {
+            var isFarmer = req.body.user.IsFarmer;
+            var PhoneNumber = req.body.user.PhoneNumber;
+            if (isFarmer) {
+                const result = await FarmerPosting.find({ UserId: PhoneNumber });
+                let cropIds = []
+
+                console.log(result.length);
+                if (result.length > 0) {
+                    for (let i = 0; i < result.length; i++) { 
+                        console.log("yeh kya hai?",result[i]);
+                        const cropDetails = await Crops.find({ _id: result[i]['_doc'].CropId });
+                        if (cropDetails) {
+                            cropIds.push(cropDetails[0]);
+
+                        }
+                    }
+                    console.log("yeh khali hai kya?",cropIds);
+                    var tempData = [];
+                    cropIds.forEach((crop, index) => { 
+                        console.log("error",result[index]['_doc'])
+                        var tempObj = Object.assign({}, result[index]['_doc']);
+                        var tempUserDetails = req.body.user;
+                        console.log("error hai ",crop);
+                        var tempcrop = Object.assign({}, crop['_doc'])
+                        delete tempUserDetails['_id'];
+                        delete tempUserDetails['updatedAt'];
+                        delete tempUserDetails['createdAt'];
+                        delete tempUserDetails['EthId'];
+                        delete tempUserDetails['CompanyName'];
+                        delete tempUserDetails['PreviousOrders'];
+                        delete tempUserDetails['CurrentOrders'];
+                        delete tempUserDetails['Postings'];
+                        delete tempcrop['_id'];
+                        delete tempcrop['updatedAt'];
+                        delete tempcrop['createdAt'];
+                        delete tempObj['UserId'];
+                        delete tempObj['CropId'];
+                        delete tempObj['PhoneNumber'];
+                        delete tempObj['updatedAt'];
+
+                        tempObj['User'] = tempUserDetails;
+                        tempObj['CropDetails'] = tempcrop;
+                        tempData.push(tempObj);
+                    });
+                    //console.log("data is",tempData);
+                    res.status(200).send({ data: tempData });
+                }
+                else {
+                    res.status(200).send({ data: [] });
+                }
+            }
+
+            else {
+                const result = await CompanyPosting.find({ UserId: PhoneNumber });
+                let cropIds = []
+
+                console.log(result.length);
+                if (result.length > 0) {
+                    for (let i = 0; i < result.length; i++) { // MANIPULATING THE STATIONS OBJECT
+                        const cropDetails = await Crops.find({ _id: result[i].CropId });
+                        if (cropDetails) {
+                            cropIds.push(cropDetails[0]);
+
+                        }
+                    }
+                    // console.log(cropIds);
+                    var tempData = [];
+                    cropIds.forEach((crop, index) => { // ADDING STATION DETAILS TO THE OBJECT
+                        var tempObj = Object.assign({}, result[index]['_doc']);
+                        var tempUserDetails = req.body.user;
+
+                        var tempcrop = Object.assign({}, crop['_doc'])
+                        delete tempUserDetails['_id'];
+                        delete tempUserDetails['updatedAt'];
+                        delete tempUserDetails['createdAt'];
+                        delete tempUserDetails['EthId'];
+                        delete tempUserDetails['CompanyName'];
+                        delete tempUserDetails['PreviousOrders'];
+                        delete tempUserDetails['CurrentOrders'];
+                        delete tempUserDetails['Postings'];
+                        delete tempcrop['_id'];
+                        delete tempcrop['updatedAt'];
+                        delete tempcrop['createdAt'];
+                        delete tempObj['UserId'];
+                        delete tempObj['CropId'];
+                        delete tempObj['PhoneNumber'];
+                        delete tempObj['updatedAt'];
+
+                        tempObj['User'] = tempUserDetails;
+                        tempObj['CropDetails'] = tempcrop;
+                        tempData.push(tempObj);
+                    });
+                    //console.log("data is",tempData);
+                    res.status(200).send({ data: tempData });
+                }
+                else {
+                    res.status(200).send({ data: [] });
+                }
+            }
+        }
+        catch (error) {
+            console.log(error)
+            res.status(400).send({ error: 'Error occured at backend!!' });
+        }
+    }
 }
+
+
 module.exports = new UserController();

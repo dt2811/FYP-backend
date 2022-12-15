@@ -1,7 +1,7 @@
 const FarmerPosting = require('../Models/FarmerPostings');
 const Users = require('../Models/User');
 const Crops = require('../Models/Crop');
-const { AddOnResultList } = require('twilio/lib/rest/api/v2010/account/recording/addOnResult');
+
 class FarmerPostingsController {
     async createNewPost(req, res) {  // Create new post
         try {
@@ -50,7 +50,7 @@ class FarmerPostingsController {
     }
 
     async updatePostDetails(req, res) { //update posts
-        var id = req.body.data._id;
+        var id = req.body.data.postId;
         var PhoneNumber=req.body.user.PhoneNumber;
         try {
             if (req.body.isSaved === true && typeof (id) !== 'undefined') {
@@ -78,12 +78,13 @@ class FarmerPostingsController {
         }
     }
     async deletePost(req, res) { //delete post
-        var id = req.body.data._id;
+        var id = req.body._id;
+        var PhoneNumber=req.body.user.PhoneNumber;
         try {
-            var result = await FarmerPosting.deleteOne({ _id: id });
+            var result = await FarmerPosting.deleteOne({ _id: id,UserId:PhoneNumber });
             var tempArray = Array.from(req.body.user.Postings);
             tempArray.pop(result._id);
-            result = Users.findOneAndUpdate({ PhoneNumber: UserId }, { Postings: tempArray });
+            result = Users.findOneAndUpdate({ PhoneNumber: PhoneNumber }, { Postings: tempArray });
             if (result) {
                 res.status(200).send({ msg: 'post deleted' });
             }
@@ -132,11 +133,10 @@ class FarmerPostingsController {
                         delete tempcrop['createdAt'];
                         delete tempObj['UserId'];
                         delete tempObj['CropId'];
-                        delete tempObj['_id'];
                         delete tempObj['PhoneNumber'];
                         delete tempObj['updatedAt'];
     
-                        tempObj['Farmer'] = tempUserDetails;
+                        tempObj['User'] = tempUserDetails;
                         tempObj['CropDetails'] = tempcrop;
                         tempData.push(tempObj);
                     });
