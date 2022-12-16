@@ -239,10 +239,9 @@ class UserController {
                 const result = await FarmerPosting.find({ UserId: PhoneNumber });
                 let cropIds = []
 
-                console.log(result.length);
+
                 if (result.length > 0) {
                     for (let i = 0; i < result.length; i++) { 
-                        console.log("yeh kya hai?",result[i]);
                         const cropDetails = await Crops.find({ _id: result[i]['_doc'].CropId });
                         if (cropDetails) {
                             cropIds.push(cropDetails[0]);

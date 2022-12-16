@@ -2,7 +2,7 @@ const companyRouter=require('express').Router();
 const AuthMiddleWare=require('../Middlewares/Auth');
 const NewCompanyPostingValidation=require('../Middlewares/NewCompanyPostingValidation');
 const UpdateCompanyPostingValidation=require('../Middlewares/UpdateCompanyPostingValidation');
-const CompanyPostingsController=require('../Controllers/FarmerPostings');
+const CompanyPostingsController=require('../Controllers/CompanyPostings');
 
 companyRouter.get('/get-company-post',CompanyPostingsController.getAllPosts);
 companyRouter.post('/create-company-post',AuthMiddleWare,NewCompanyPostingValidation,CompanyPostingsController.createNewPost);

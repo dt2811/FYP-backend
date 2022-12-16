@@ -16,6 +16,10 @@ const CompanyPostingSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
+    Price:{
+        type: String,
+        required: true,
+    },
 }, { timestamps: true, _id: true });
 
 

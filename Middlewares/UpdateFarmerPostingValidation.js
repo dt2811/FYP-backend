@@ -3,6 +3,7 @@ async function UpdateFarmerPostingValidationMiddleware(req, res, next) {
     var Details = req.body.Details;
     var Quantity=req.body.Quantity;
     var ImageUrls = req.body.ImageUrls;
+    var Price=req.body.Price;
     var postId=req.body._id;
     var message = {};
     console.log(postId);
@@ -21,6 +22,9 @@ async function UpdateFarmerPostingValidationMiddleware(req, res, next) {
     if (typeof (Quantity) !== "undefined" && Quantity.length >= 0) {
         message.Quantity=Quantity;
     }
+    if (typeof (Price) !== "undefined" && Price.length >= 0) {
+        message.Price=Price;
+      }
     if (Object.keys(message).length === 0) {
     req.body.isSaved=false;
     }

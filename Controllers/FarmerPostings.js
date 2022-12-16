@@ -10,6 +10,7 @@ class FarmerPostingsController {
             var Details = req.body.Details;
             var Quantity = req.body.Quantity;
             var ImageUrls = req.body.ImageUrls;
+            var Price=req.body.Price;
             var isValid = req.body.validation['isValid'];
             if (isValid === true) {
                 var result = await Crops.findById(CropId); // CHECKING IF THE CROP IS THERE OR NOT
@@ -19,7 +20,8 @@ class FarmerPostingsController {
                         CropId: CropId,
                         Details: Details,
                         Quantity: Quantity,
-                        ImageUrls: ImageUrls
+                        ImageUrls: ImageUrls,
+                        Price:Price,
                     });
                     result = await posting.save(); // ADDING USER AFTER VALIDATIONS
                     var tempArray = Array.from(req.body.user.Postings);
