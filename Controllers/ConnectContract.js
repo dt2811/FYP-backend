@@ -8,24 +8,34 @@ const fsPromises = fs.promises;
 //TODO: 
 //Error Handling All
 //Checking if this works
+// Add something to get all the postings from the blockchain; refer IPD codes
 
 class ContractController {
 
     constructor() {
+        console.log("HIIIIII");
         this.contract = this.init();
+        this.initTransactionBlock = this.initTransactionBlock.bind(this);
+        this.acceptRequest = this.acceptRequest.bind(this);
+        // console.log(this.contract.address)
+        // console.log(this.contract.functions)
     }
 
-    async getAbi() {
-        const data = await fsPromises.readFile(process.env.ABI_FILE_PATH, 'utf8');
-        const abi = JSON.parse(data)['abi'];
-        console.log(abi);
+    getAbi() {
+        // IF CONTRACT IS UPDATED PLEASE UPDATE THIS ABI, IK IT'S SUPER STUPID BUT IDK WHAT ELSE TO DO
+        const abi = [
+            "function initTransactionBlock(uint256 dateRequestPosted, int256 cropID, int256 cropQuantity, int256 cropPrice, bool initByFarmer) public returns (int256)",
+            "function acceptRequest(int256 transactionID, bool initByFarmer) public",
+            "function completeRequest(int256 transactionID) public",
+            "function deleteRequest(int256 transactionID) public"
+        ]
         return abi;
     }
 
-    async init() {
+    init() {
         const ethProvider = new ethers.providers.JsonRpcProvider('http://127.0.0.1:7545');
         const ethSigner = ethProvider.getSigner();
-        const abi = await this.getAbi();
+        const abi = this.getAbi();
         const ethContract = new ethers.Contract(
             process.env.DEPLOYED_CONTRACT_ADDRESS,
             abi,
@@ -34,53 +44,51 @@ class ContractController {
         return ethContract;
     }
 
-    async initBlockFarmer(req, res) {
+    async initTransactionBlock(req, res) {
         try {
+            console.log(this.contract.address)
             const newcontract = this.contract;
-            let transaction = await newcontract.initTransactionBlockFarmer(
-                req.body.createdAt, //EDIT THIS LATER
-                req.body.CropId,
-                req.body.CropQuantity, //EDIT FOR CROPDETAILS
-                req.body.CropPrice, //EDIT FOR CROPDETAILS
-                req.user.Coordinates, // EDIT FOR LATITUDE
-                req.user.Coordinates //EDIT FOR LONGITUDE
+            var createdAt = req.body.createdAt;
+            var CropId = req.body.CropId;
+            var CropQuantity = req.body.CropQuantity;
+            var CropPrice = req.body.CropPrice;
+            // var isFarmer = req.body.isFarmer;
+            var isFarmer = true;
+
+            let transaction = await newcontract.initTransactionBlock(
+                createdAt, //EDIT THIS LATER
+                CropId,
+                CropQuantity, //EDIT FOR CROPDETAILS
+                CropPrice, //EDIT FOR CROPDETAILS
+                isFarmer
             )
-            var transactionID = await transaction.wait();
-            return transactionID;
+            var transactionReply = await transaction.wait();
+            if (transactionReply) {
+                res.status(200).send({ message: 'Accept succesfully', data: transactionReply });
+                return;
+            }
         } catch (error) {
             console.log(error)
             res.status(400).send({ error: 'Contract Error!' });
         }
     }
 
-    async initBlockStore() {
+    async acceptRequest(req, res) {
         try {
             const newcontract = this.contract;
-            let transaction = await newcontract.initTransactionBlockStore(
-                req.body.createdAt, //EDIT THIS LATER
-                req.body.CropId,
-                req.body.CropQuantity, //EDIT FOR CROPDETAILS
-                req.body.CropPrice, //EDIT FOR CROPDETAILS
-                req.user.Coordinates, // EDIT FOR LATITUDE
-                req.user.Coordinates //EDIT FOR LONGITUDE
-            )
-            var transactionID = await transaction.wait();
-            return transactionID;
-        } catch (error) {
-            console.log(error)
-            res.status(400).send({ error: 'Contract Error!' });
-        }
-    }
+            var transactionId = req.body.transactionId;
+            // var isFarmer = req.body.isFarmer;
+            var isFarmer = false;
 
-    async farmerAcceptRequest(req, res) {
-        try {
-            const newcontract = this.contract;
-            let transaction = await newcontract.farmerAcceptRequest(
-                req.body.transactionID,
-                req.user.Coordinates, // EDIT FOR LATITUDE
-                req.user.Coordinates //EDIT FOR LONGITUDE
+            let transaction = await newcontract.acceptRequest(
+                transactionId,
+                isFarmer
             )
-            await transaction.wait();
+            var transactionReply = await transaction.wait();
+            if (transactionReply) {
+                res.status(200).send({ message: 'Accept succesfully', data: transactionReply });
+                return;
+            }
             return;
         } catch (error) {
             console.log(error)
@@ -88,29 +96,19 @@ class ContractController {
         }
     }
 
-    async storeAcceptRequest() {
-        try {
-            const newcontract = this.contract;
-            let transaction = await newcontract.storeAcceptRequest(
-                req.body.transactionID,
-                req.user.Coordinates, // EDIT FOR LATITUDE
-                req.user.Coordinates //EDIT FOR LONGITUDE
-            )
-            await transaction.wait();
-            return;
-        } catch (error) {
-            console.log(error)
-            res.status(400).send({ error: 'Contract Error!' });
-        }
-    }
+
     async completeRequest() {
         try {
             const newcontract = this.contract;
+            var transactionId = req.body.transactionId;
             let transaction = await newcontract.completeRequest(
-                req.body.transactionID,
-             
+                transactionId
             )
-            await transaction.wait();
+            var transactionReply = await transaction.wait();
+            if (transactionReply) {
+                res.status(200).send({ message: 'Accept succesfully', data: transactionReply });
+                return;
+            }
             return;
         } catch (error) {
             console.log(error)
@@ -121,11 +119,15 @@ class ContractController {
     async deleteRequest() {
         try {
             const newcontract = this.contract;
+            var transactionId = req.body.transactionId;
             let transaction = await newcontract.deleteRequest(
-                req.body.transactionID,
-             
+                transactionId,
             )
-            await transaction.wait();
+            var transactionReply = await transaction.wait();
+            if (transactionReply) {
+                res.status(200).send({ message: 'Accept succesfully', data: transactionReply });
+                return;
+            }
             return;
         } catch (error) {
             console.log(error)
@@ -133,3 +135,5 @@ class ContractController {
         }
     }
 }
+
+module.exports = new ContractController(); 

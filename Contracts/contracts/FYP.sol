@@ -12,44 +12,43 @@ contract FYP {
         Cancelled
     }
 
-    struct coordinates {
-        int256 latitude;
-        int256 longitude;
+    enum Initiator {
+        Farmer,
+        Store
     }
-
+    
     struct Transaction {
         int256 transactionID;
         address farmerAddress;
         address storeAddress;
         uint256 dateRequestPosted;
         uint256 dateRequestAccepted;
-        coordinates farmerCoordinates;
-        coordinates storeCoordinates;
         int256 cropID;
         int256 cropQuantity;
         int256 cropPrice;
         TransactionStatus transactionStatus;
     }
 
-    function initTransactionBlockStore(
+    function initTransactionBlock(
         uint256 dateRequestPosted,
         int256 cropID,
         int256 cropQuantity,
         int256 cropPrice,
-        int256 storeLatitude,
-        int256 storeLongitude
-    ) public returns(int256) {
+        bool initByFarmer
+    ) public returns (int256) {
+        address farmerAddress = 0x0000000000000000000000000000000000000000;
+        address storeAddress = 0x0000000000000000000000000000000000000000;
+        if (initByFarmer) {
+            farmerAddress = msg.sender;
+        } else {
+            storeAddress = msg.sender;
+        }
         TransactionLedger[transactions] = Transaction({
             transactionID: transactions,
-            farmerAddress: 0x0000000000000000000000000000000000000000,
-            storeAddress: msg.sender,
+            farmerAddress: farmerAddress,
+            storeAddress: storeAddress,
             dateRequestPosted: dateRequestPosted,
             dateRequestAccepted: block.timestamp,
-            farmerCoordinates: coordinates({latitude: 0, longitude: 0}),
-            storeCoordinates: coordinates({
-                latitude: storeLatitude,
-                longitude: storeLongitude
-            }),
             cropID: cropID,
             cropQuantity: cropQuantity,
             cropPrice: cropPrice,
@@ -59,74 +58,21 @@ contract FYP {
         return transactions;
     }
 
-    function initTransactionBlockFarmer(
-        uint256 dateRequestPosted,
-        int256 cropID,
-        int256 cropQuantity,
-        int256 cropPrice,
-        int256 farmerLatitude,
-        int256 farmerLongitude
-    ) public returns(int256){
-        TransactionLedger[transactions] = Transaction({
-            transactionID: transactions,
-            farmerAddress: msg.sender,
-            storeAddress: 0x0000000000000000000000000000000000000000,
-            dateRequestPosted: dateRequestPosted,
-            dateRequestAccepted: block.timestamp,
-            farmerCoordinates: coordinates({
-                latitude: farmerLatitude,
-                longitude: farmerLongitude
-            }),
-            storeCoordinates: coordinates({latitude: 0, longitude: 0}),
-            cropID: cropID,
-            cropQuantity: cropQuantity,
-            cropPrice: cropPrice,
-            transactionStatus: TransactionStatus.Requested
-        });
-        transactions += 1;
-        return transactions;
-    }
-
-    function farmerAcceptRequest(
+    function acceptRequest(
         int256 transactionID,
-        int256 farmerLatitude,
-        int256 farmerLongitude
+        bool initByFarmer
     ) public {
-        require(
-            TransactionLedger[transactionID].farmerAddress ==
-                0x0000000000000000000000000000000000000000
-        );
         require(
             TransactionLedger[transactionID].transactionStatus ==
                 TransactionStatus.Requested
         );
-        TransactionLedger[transactionID].farmerAddress = msg.sender;
-        TransactionLedger[transactionID].farmerCoordinates = coordinates({
-            latitude: farmerLatitude,
-            longitude: farmerLongitude
-        });
-    }
-
-    function storeAcceptRequest(
-        int256 transactionID,
-        int256 storeLatitude,
-        int256 storeLongitude
-    ) public {
-        require(
-            TransactionLedger[transactionID].storeAddress ==
-                0x0000000000000000000000000000000000000000
-        );
-        require(
-            TransactionLedger[transactionID].transactionStatus ==
-                TransactionStatus.Requested
-        );
-        TransactionLedger[transactionID].storeAddress = msg.sender;
-        TransactionLedger[transactionID].storeCoordinates = coordinates({
-            latitude: storeLatitude,
-            longitude: storeLongitude
-        });
-        TransactionLedger[transactionID].transactionStatus = TransactionStatus
-            .Accepted;
+        if (initByFarmer) {
+            TransactionLedger[transactionID].farmerAddress = msg.sender;
+        } else {
+            TransactionLedger[transactionID].storeAddress = msg.sender;
+        }
+        TransactionLedger[transactionID].transactionStatus =
+                TransactionStatus.Accepted;
     }
 
     function completeRequest(int256 transactionID) public {
@@ -141,7 +87,7 @@ contract FYP {
     function deleteRequest(int256 transactionID) public {
         require(
             TransactionLedger[transactionID].transactionStatus !=
-                TransactionStatus.Completed 
+                TransactionStatus.Completed
         );
         TransactionLedger[transactionID].transactionStatus = TransactionStatus
             .Cancelled;
