@@ -8,8 +8,10 @@ class CompanyPostingsController {
             var CropId = req.body.CropId;
             var Details = req.body.Details;
             var Quantity = req.body.Quantity;
+            var Price=req.body.Price;
             var isValid = req.body.validation['isValid'];
-            if (isValid === true) {
+            var IsFarmer=req.body.user.IsFarmer;
+            if (isValid === true &&IsFarmer==false) {
                 var result = await Crops.findById(CropId); // CHECKING IF THE CROP IS THERE OR NOT
                 if (result) {
                     const posting = new CompanyPosting({
@@ -17,13 +19,16 @@ class CompanyPostingsController {
                         CropId: CropId,
                         Details: Details,
                         Quantity: Quantity,
+                        Price:Price,
                     });
                     result = await posting.save(); // ADDING USER AFTER VALIDATIONS
-                    var tempArray=Array.from(req.body.user.Postings);
-                    tempArray.push(result._id);
-                    result=Users.findOneAndUpdate({ PhoneNumber: UserId}, {Postings:tempArray});
+                    var tempArray = Array.from(req.body.user.Postings);
+                    var tempObj = Object.assign({}, result['_doc']);
+                    tempArray.push(tempObj['_id']);
+                    result = await Users.findOneAndUpdate({ PhoneNumber: UserId }, { Postings: tempArray });
                     if (result) {
-                        res.status(200).send({ message: 'Post succesfully', data: result });
+                        tempObj = Object.assign({}, result['_doc']);
+                        res.status(200).send({ message: 'Post succesfully', data: tempObj});
                         return;
                     }
                     else {
@@ -35,7 +40,11 @@ class CompanyPostingsController {
                 }
             }
             else {
-                res.status(400).send(req.body.validation);
+                if(req.body.validation){
+                    res.status(400).send({msg:"Not a company"});
+                }
+                else{
+                res.status(400).send(req.body.validation);}
             }
         }
         catch (error) {
@@ -45,7 +54,7 @@ class CompanyPostingsController {
     }
 
     async updatePostDetails(req, res) { //update posts
-        var id = req.body.data._id;
+        var id = req.body.data.postId;
         var PhoneNumber=req.body.user.PhoneNumber;
         try {
             if (req.body.isSaved === true && typeof (id) !== 'undefined') {
@@ -73,12 +82,13 @@ class CompanyPostingsController {
         }
     }
     async deletePost(req, res) { //delete post
-        var id = req.body.data._id;
+        var id = req.body._id;
+        var PhoneNumber=req.body.user.PhoneNumber;
         try {
             var result = await CompanyPosting.deleteOne({ _id:id });
-            var tempArray=Array.from(req.body.user.Postings);
+            var tempArray = Array.from(req.body.user.Postings);
             tempArray.pop(result._id);
-            result=Users.findOneAndUpdate({ PhoneNumber: UserId}, {Postings:tempArray});
+            result = Users.findOneAndUpdate({ PhoneNumber: PhoneNumber }, { Postings: tempArray });
             if (result) {
                 res.status(200).send({ msg: 'post deleted' });
             }
@@ -130,11 +140,10 @@ class CompanyPostingsController {
                             delete tempcrop['createdAt'];
                             delete tempObj['UserId'];
                             delete tempObj['CropId'];
-                            delete tempObj['_id'];
                             delete tempObj['PhoneNumber'];
                             delete tempObj['updatedAt'];
         
-                            tempObj['Farmer'] = tempUserDetails;
+                            tempObj['User'] = tempUserDetails;
                             tempObj['CropDetails'] = tempcrop;
                             tempData.push(tempObj);
                         });

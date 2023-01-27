@@ -20,6 +20,10 @@ const FarmerPostingSchema = new mongoose.Schema({
         type: Array,
         required: true,
     },
+    Price:{
+        type: String,
+        required: true,
+    },
 }, { timestamps: true, _id: true });
 
 

@@ -3,6 +3,8 @@ function NewFarmerPostingValidation(req,res,next){
     var Details = req.body.Details;
     var Quantity=req.body.Quantity;
     var ImageUrls = req.body.ImageUrls;
+    var Price=req.body.Price;
+    console.log(req.body);
     var message = {};
 if (typeof (Details) === "undefined" || Details.length <= 0) {
     message.isValid = false;
@@ -14,6 +16,18 @@ if (typeof (Details) === "undefined" || Details.length <= 0) {
     else {
         message.missingFields = [];
         message.missingFields.push("Details");
+    }
+}
+if (typeof (Price) === "undefined" || Price.length <= 0) {
+    message.isValid = false;
+    if (message.missingFields) {
+        var temp = Array.from(message.missingFields);
+        temp.push("Price");
+        message.missingFields = temp;
+    }
+    else {
+        message.missingFields = [];
+        message.missingFields.push("Price");
     }
 }
 if (typeof (CropId) === "undefined" || CropId.length <= 0) {
@@ -57,6 +71,7 @@ if (Object.keys(message).length === 0) {
     req.body.validation = message;
 }
 else {
+    console.log(message);
     req.body.validation = message;
 }
 next();
