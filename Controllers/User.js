@@ -134,8 +134,8 @@ class UserController {
         if (PhoneNumber) {
             if (regex.test(PhoneNumber) == true) {
                 var otp = Math.floor(1000 + Math.random() * 9000).toString();
-                //var isOTPSent = true
-                var isOTPSent = sendOtp(PhoneNumber, otp);  // OTP FUNCTION
+                var isOTPSent = true
+                // var isOTPSent = sendOtp(PhoneNumber, otp);  // OTP FUNCTION
                 console.log(isOTPSent);
                 if (isOTPSent) {
                     var hash = bcrypt.hashSync(otp, 10); // HASHING THE OTP 

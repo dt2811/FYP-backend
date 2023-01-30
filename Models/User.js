@@ -58,6 +58,9 @@ const UserSchema = new mongoose.Schema({
     Postings: {
         type: Array,
     },
+    Requests: {
+        type: Array
+    }
 }, { timestamps: true, _id: true });
 
 

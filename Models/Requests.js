@@ -1,10 +1,15 @@
 const mongoose = require('mongoose');
+const RequestStatus = Object.freeze({
+    Pending: 'Pending',
+    Accepted: 'Accepted',
+    Rejected: 'Rejected'
+})
 const RequestSchema = new mongoose.Schema({
-    RequestInitiatorEthId: {
+    RequestInitiatorId: {
         type: String,
         required: true
     },
-    RequestTargetEthId: {
+    RequestTargetId: {
         type: String,
         required: true
     },
@@ -16,8 +21,8 @@ const RequestSchema = new mongoose.Schema({
         type: String,
         required: false
     },
-    IsComplete: {
-        type: Boolean,
+    RequestStatus: {
+        type: String,
         required: true
     }
 }, { timestamps: true, _id: true });
