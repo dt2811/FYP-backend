@@ -16,7 +16,7 @@ class ContractController {
         console.log("HIIIIII");
         this.contract = this.init();
         this.initTransactionBlock = this.initTransactionBlock.bind(this);
-        this.acceptRequest = this.acceptRequest.bind(this);
+        this.deleteRequest = this.deleteRequest.bind(this);
         // console.log(this.contract.address)
         // console.log(this.contract.functions)
     }
@@ -24,10 +24,9 @@ class ContractController {
     getAbi() {
         // IF CONTRACT IS UPDATED PLEASE UPDATE THIS ABI, IK IT'S SUPER STUPID BUT IDK WHAT ELSE TO DO
         const abi = [
-            "function initTransactionBlock(uint256 dateRequestPosted, int256 cropID, int256 cropQuantity, int256 cropPrice, bool initByFarmer) public returns (int256)",
-            "function acceptRequest(int256 transactionID, bool initByFarmer) public",
-            "function completeRequest(int256 transactionID) public",
-            "function deleteRequest(int256 transactionID) public"
+            "function initTransactionBlock(uint256 dateRequestPosted, string memory farmerId, string memory companyId, string memory requestId) public returns (int256)",
+            "function deleteRequest(string memory requestId) public",
+            "event TransactionBlockInitialized(int256 transactionID)",
         ]
         return abi;
     }
@@ -47,24 +46,33 @@ class ContractController {
     async initTransactionBlock(req, res) {
         try {
             console.log(this.contract.address)
+            // Get the deployed contract
             const newcontract = this.contract;
-            var createdAt = req.body.createdAt;
-            var CropId = req.body.CropId;
-            var CropQuantity = req.body.CropQuantity;
-            var CropPrice = req.body.CropPrice;
-            // var isFarmer = req.body.isFarmer;
-            var isFarmer = true;
+
+            // Get the Data Object from the Middleware
+            var RequestData = req.body.data;
 
             let transaction = await newcontract.initTransactionBlock(
-                createdAt, //EDIT THIS LATER
-                CropId,
-                CropQuantity, //EDIT FOR CROPDETAILS
-                CropPrice, //EDIT FOR CROPDETAILS
-                isFarmer
-            )
+                RequestData.createdAt,
+                RequestData.FarmerId,
+                RequestData.CompanyId,
+                RequestData.RequestId
+            );
+
+            // Wait for the reply from Blockchain
             var transactionReply = await transaction.wait();
+
+            console.log(transactionReply);
+
+            transactionReply = {};
+
+            // Listen for TransactionBlockInitialized event
+            newcontract.on("TransactionBlockInitialized", (transactionID) => {
+                transactionReply.transactionID = transactionID;
+            });
+
             if (transactionReply) {
-                res.status(200).send({ message: 'Accept succesfully', data: transactionReply });
+                res.status(200).send({ message: 'Transaction Added to Blockchain', data: transactionReply });
                 return;
             }
         } catch (error) {
@@ -104,6 +112,7 @@ class ContractController {
             let transaction = await newcontract.completeRequest(
                 transactionId
             )
+            newcontract.on("TransactionBlockInitialized", (transactionId));
             var transactionReply = await transaction.wait();
             if (transactionReply) {
                 res.status(200).send({ message: 'Accept succesfully', data: transactionReply });
@@ -118,14 +127,21 @@ class ContractController {
 
     async deleteRequest() {
         try {
+            // Get Deployed Contract
             const newcontract = this.contract;
-            var transactionId = req.body.transactionId;
+
+            // Get the Request Id
+            var requestId = req.body.RequestId;
+
+            // Call the Contract Function
             let transaction = await newcontract.deleteRequest(
-                transactionId,
-            )
+                requestId,
+            );
+
+            // Wait for reply
             var transactionReply = await transaction.wait();
             if (transactionReply) {
-                res.status(200).send({ message: 'Accept succesfully', data: transactionReply });
+                res.status(200).send({ message: 'Transaction Deleted', data: transactionReply });
                 return;
             }
             return;
