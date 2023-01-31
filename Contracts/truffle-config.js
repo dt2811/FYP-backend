@@ -1,3 +1,5 @@
+require('dotenv').config({path:"../.env"});
+
 /**
  * Use this file to configure your truffle project. It's seeded with some
  * common settings for different networks and features like migrations,
@@ -18,10 +20,10 @@
  *
  */
 
-// const HDWalletProvider = require('@truffle/hdwallet-provider');
-//
-// const fs = require('fs');
-// const mnemonic = fs.readFileSync(".secret").toString().trim();
+const HDWalletProvider = require('@truffle/hdwallet-provider');
+const privateKey = [process.env.ETHEREUM_ACCOUNT_PRIVATE_KEY];
+const infuraKey = process.env.GORLI_ETH_API_KEY;
+
 
 module.exports = {
   /**
@@ -74,6 +76,19 @@ module.exports = {
     //   network_id: 2111,   // This network is yours, in the cloud.
     //   production: true    // Treats this network as if it was a public net. (default: false)
     // }
+
+    goerli: {
+      provider: () => new HDWalletProvider({
+        privateKeys: privateKey,
+        providerOrUrl: 'https://goerli.infura.io/v3/' + infuraKey
+      }),
+      network_id: 5, // Goerli's Network ID
+      chain_id: 5, // Goerli's Chain ID
+      gas: 5500000, // Gas Limit used for Deploys
+      confirmations: 2, // No. of confirations to wait before deployments
+      timeoutblocks: 200, // No. of blocks before a deployment times out
+      skipDryRun: true
+    }
   },
 
   // Set default mocha options here, use special reporters, etc.

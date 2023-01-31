@@ -35,7 +35,7 @@ function ContractTransactionInitializationValidationMiddleware(req, res, next) {
             message.missingFields.push("farmerId");
         }
     } else {
-        data.farmerId = farmerId;
+        data.FarmerId = farmerId;
     }
 
     if (typeof (companyId) === "undefined" || companyId.length <= 0) {
@@ -50,7 +50,7 @@ function ContractTransactionInitializationValidationMiddleware(req, res, next) {
             message.missingFields.push("companyId");
         }
     } else {
-        data.companyId = companyId;
+        data.CompanyId = companyId;
     }
 
     if (typeof (requestId) === "undefined" || requestId.length <= 0) {
@@ -66,7 +66,7 @@ function ContractTransactionInitializationValidationMiddleware(req, res, next) {
         }
     } else {
         var requestId = req.body.RequestId;
-        data.requestId = requestId;
+        data.RequestId = requestId;
     }
 
     if (Object.keys(message).length === 0) {

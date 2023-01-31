@@ -1,57 +1,76 @@
 require('dotenv').config();
-var fs = require('fs');
 var ethers = require('ethers')
-const fsPromises = fs.promises;
+const { abi } = require('../Contracts/build/contracts/FYP.json');
 
 // INSTRUCTION: DO NOT CONNECT WITH BACKEND BEFORE VALIDATING IF THIS WORKS!!!!
 
 //TODO: 
 //Error Handling All
 //Checking if this works
-// Add something to get all the postings from the blockchain; refer IPD codes
 
 class ContractController {
 
     constructor() {
-        console.log("HIIIIII");
+        console.log("Initializing Contract...");
+
+        // Print the Deployed Contract ABI
+        // console.log("Contract ABI: ", abi);
+
+        // Initialize the contract
         this.contract = this.init();
+
+        // Bind Methods to the Class
         this.initTransactionBlock = this.initTransactionBlock.bind(this);
         this.deleteRequest = this.deleteRequest.bind(this);
-        // console.log(this.contract.address)
-        // console.log(this.contract.functions)
-    }
-
-    getAbi() {
-        // IF CONTRACT IS UPDATED PLEASE UPDATE THIS ABI, IK IT'S SUPER STUPID BUT IDK WHAT ELSE TO DO
-        const abi = [
-            "function initTransactionBlock(uint256 dateRequestPosted, string memory farmerId, string memory companyId, string memory requestId) public returns (int256)",
-            "function deleteRequest(string memory requestId) public",
-            "event TransactionBlockInitialized(int256 transactionID)",
-        ]
-        return abi;
     }
 
     init() {
-        const ethProvider = new ethers.providers.JsonRpcProvider('http://127.0.0.1:7545');
-        const ethSigner = ethProvider.getSigner();
-        const abi = this.getAbi();
+        // For Deployment Purposes on Infura Goerli Network
+        const contractEndpoint = process.env.GORLI_ETH_ENDPOINT;
+        const walletPrivateKey = process.env.ETHEREUM_ACCOUNT_PRIVATE_KEY;
+        const contractAddress = process.env.DEPLOYED_CONTRACT_ADDRESS;
+
+
+        // For Testing Purposes on Ganache Local Blockchain 
+        // const walletPrivateKey = process.env.ETHEREUM_ACCOUNT_PRIVATE_KEY_GANACHE;
+        // const contractAddress = process.env.DEPLOYED_CONTRACT_ADDRESS_GANACHE;
+
+        // For Deployment Purposes on Infura Goerli Network
+        const ethProvider = new ethers.providers.JsonRpcProvider(contractEndpoint);
+
+        // For Testing Purposes on Ganache Local Blockchain
+        // const ethProvider = new ethers.providers.JsonRpcProvider("HTTP://127.0.0.1:7545");
+
+        // Create new Wallet instance for signing transactions to the Blockchain
+        const wallet = new ethers.Wallet(walletPrivateKey, ethProvider);
+
+        // Create new read-only Ethers Contract
         const ethContract = new ethers.Contract(
-            process.env.DEPLOYED_CONTRACT_ADDRESS,
+            contractAddress,
             abi,
-            ethSigner
+            ethProvider
         );
-        return ethContract;
+
+        // Connect the wallet to the Ethereum Contract
+        const connectedEthContract = ethContract.connect(wallet);
+        return connectedEthContract;
     }
 
     async initTransactionBlock(req, res) {
         try {
-            console.log(this.contract.address)
+
+            // console.log("Contract Deployed at Address: ", this.contract.address)
+            
             // Get the deployed contract
             const newcontract = this.contract;
 
             // Get the Data Object from the Middleware
             var RequestData = req.body.data;
 
+            // Create Empty response object
+            var TransactionResponse = {};
+
+            // Call the initTransactionBlock function
             let transaction = await newcontract.initTransactionBlock(
                 RequestData.createdAt,
                 RequestData.FarmerId,
@@ -62,17 +81,24 @@ class ContractController {
             // Wait for the reply from Blockchain
             var transactionReply = await transaction.wait();
 
-            console.log(transactionReply);
+            // Check Point for Transaction Reply
+            // console.log("Checkpoint #1: ", transactionReply);
 
-            transactionReply = {};
-
-            // Listen for TransactionBlockInitialized event
-            newcontract.on("TransactionBlockInitialized", (transactionID) => {
-                transactionReply.transactionID = transactionID;
-            });
+            // Get the details of the TransactionLedger mapping from the Blockchain
+            transactionReply = await newcontract.TransactionLedger(
+                RequestData.RequestId
+            );
 
             if (transactionReply) {
-                res.status(200).send({ message: 'Transaction Added to Blockchain', data: transactionReply });
+                TransactionResponse.TransactionId = ethers.utils.formatUnits(transactionReply[0], 0);
+                TransactionResponse.RequestId = transactionReply[3];
+                TransactionResponse.FarmerId = transactionReply[1];
+                TransactionResponse.CompanyId = transactionReply[2];
+
+                // Check Point for Transaction Reply
+                // console.log("Checkpoint #2: ", transactionReply);
+
+                res.status(200).send({ message: 'Transaction Added to Blockchain', data: TransactionResponse });
                 return;
             }
         } catch (error) {
@@ -80,6 +106,8 @@ class ContractController {
             res.status(400).send({ error: 'Contract Error!' });
         }
     }
+
+
 
     async acceptRequest(req, res) {
         try {
