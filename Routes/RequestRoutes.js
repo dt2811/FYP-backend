@@ -4,7 +4,7 @@ const NewRequestValidationMiddleware = require('../Middlewares/NewRequestValidat
 const RequestsController = require('../Controllers/Requests');
 
 requestRouter.get('/get-requests', AuthMiddleWare, RequestsController.getMyRequests);
-requestRouter.get('/get-pending-requests', AuthMiddleWare, RequestsController.getPendingRequests);
+requestRouter.post('/get-pending-requests', AuthMiddleWare, RequestsController.getPendingRequests);
 requestRouter.get('/get-approved-requests', AuthMiddleWare, RequestsController.getApprovedRequests);
 requestRouter.post('/create-request', AuthMiddleWare, NewRequestValidationMiddleware, RequestsController.createNewRequest);
 requestRouter.put('/accept-request', AuthMiddleWare, RequestsController.acceptRequest);
