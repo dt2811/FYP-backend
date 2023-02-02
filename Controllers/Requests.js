@@ -58,7 +58,7 @@ class RequestsController {
                     tempArray.push(tempObj['_id']);
 
                     // Update the concerned user's Requests Array
-                    result = await Users.findOneAndUpdate({ _id: RequestData.RequestInitiatorId }, { Requests: tempArray });
+                    result = await Users.findOneAndUpdate({ PhoneNumber: RequestData.RequestInitiatorId }, { Requests: tempArray });
 
                     // console.log("Get User here", result);
                     if (result) {
