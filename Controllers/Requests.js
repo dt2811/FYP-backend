@@ -39,7 +39,7 @@ class RequestsController {
                         RequestInitiatorId: RequestData.RequestInitiatorId,
                         RequestTargetId: TargetUserId,
                         PostingId: RequestData.PostingId,
-                        Message: RequestData.Message,
+                        MessageFromRequestor: RequestData.Message,
                         RequestStatus: RequestStatus.Pending
                     });
 
