@@ -139,11 +139,13 @@ class RequestsController {
             const result = await Request.find({ RequestTargetId: RequestTargetId, RequestStatus: RequestStatus.Pending });
             // To store Post IDs
             let postIds = [];
-
+            let requestorNames=[];
+            let requestorCompany=[];
             // If there are any Requests with given filter
             if (result.length > 0) {
                 // Loop to add all posts to postIds
                 for (let i = 0; i < result.length; i++) {
+                    let requestInitiatorDetails=await Users.find({ PhoneNumber: result[i].RequestInitiatorId });
                     // If user is a farmer then all the requests will be made to Company Postings and vice versa
                     if (isFarmer) {
                         postDetails = await CompanyPostings.find({ _id: result[i]["_doc"].PostingId });
@@ -155,6 +157,13 @@ class RequestsController {
                     if (postDetails) {
                         postIds.push(postDetails[0]);
                     }
+                    if(requestInitiatorDetails){ 
+                        requestorNames.push(requestInitiatorDetails[0].FirstName +" "+ requestInitiatorDetails[0].LastName);
+                        requestorCompany.push(requestInitiatorDetails[0].isFarmer!=undefined?requestInitiatorDetails[0].CompanyName:"Farmer");  
+                    }
+                      else{
+                          requestorNames.push("Anonymous");
+                      }
                 }
 
                 var tempData = [];
@@ -179,7 +188,8 @@ class RequestsController {
                     delete tempObj['CropId'];
                     delete tempObj['PhoneNumber'];
                     delete tempObj['updatedAt'];
-
+                    tempObj['RequestInitiatorCompanyName']=requestorCompany[index];
+                    tempObj['RequestInitiatorName']= requestorNames[index];
                     tempObj['User'] = tempUserDetails;
                     tempData.push(tempObj);
                 });
@@ -208,10 +218,15 @@ class RequestsController {
             const result = await Request.find({ RequestTargetId: RequestTargetId, PostingId: PostingId, RequestStatus: RequestStatus.Pending });
             // To store Post IDs
             let postIds = [];
+            let requestorNames=[];
+            let requestorCompany=[];
             // If there are any Requests with given filter
+
             if (result.length > 0) {
                 // Loop to add all posts to postIds
                 for (let i = 0; i < result.length; i++) {
+                    let requestInitiatorDetails=await Users.find({ PhoneNumber: result[i].RequestInitiatorId });
+
                     // If user is a farmer then all the requests will be made to Company Postings and vice versa
                     if (isFarmer) {
                         postDetails = await CompanyPostings.find({ _id: result[i]["_doc"].PostingId });
@@ -222,6 +237,13 @@ class RequestsController {
                     // Push Post ID into postIds
                     if (postDetails) {
                         postIds.push(postDetails[0]);
+                    }
+                    if(requestInitiatorDetails){
+                      requestorNames.push(requestInitiatorDetails[0].FirstName +" "+ requestInitiatorDetails[0].LastName);
+                      requestorCompany.push(requestInitiatorDetails[0].isFarmer!=undefined?requestInitiatorDetails[0].CompanyName:"Farmer");
+                    }
+                    else{
+                        requestorNames.push("Anonymous");
                     }
                 }
 
@@ -247,7 +269,8 @@ class RequestsController {
                     delete tempObj['CropId'];
                     delete tempObj['PhoneNumber'];
                     delete tempObj['updatedAt'];
-
+                    tempObj['RequestInitiatorCompanyName']=requestorCompany[index];
+                    tempObj['RequestInitiatorName']= requestorNames[index];
                     tempObj['User'] = tempUserDetails;
                     tempData.push(tempObj);
                 });
