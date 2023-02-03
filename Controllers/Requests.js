@@ -324,7 +324,7 @@ class RequestsController {
                     // Temporary container to hold User Details
                     var tempUserDetails = req.body.user;
                     // Temporary container to hold Post Details
-                    var tempPost = Object.assign({}, post['_doc']);
+                  //  var tempPost = Object.assign({}, post['_doc']);
 
                     // Delete unnecessary data
                     delete tempUserDetails['_id'];
