@@ -11,7 +11,7 @@ class CompanyPostingsController {
             var Price=req.body.Price;
             var isValid = req.body.validation['isValid'];
             var IsFarmer=req.body.user.IsFarmer;
-            if (isValid === true &&IsFarmer==false) {
+            if (isValid === true &&IsFarmer===false) {
                 var result = await Crops.findById(CropId); // CHECKING IF THE CROP IS THERE OR NOT
                 if (result) {
                     const posting = new CompanyPosting({

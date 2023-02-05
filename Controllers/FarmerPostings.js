@@ -11,8 +11,9 @@ class FarmerPostingsController {
             var Quantity = req.body.Quantity;
             var ImageUrls = req.body.ImageUrls;
             var Price = req.body.Price;
+            var IsFarmer=req.body.user.IsFarmer;
             var isValid = req.body.validation['isValid'];
-            if (isValid === true) {
+            if (isValid === true && IsFarmer===true) {
                 var result = await Crops.findById(CropId); // CHECKING IF THE CROP IS THERE OR NOT
                 if (result) {
                     const posting = new FarmerPosting({
