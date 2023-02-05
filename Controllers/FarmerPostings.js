@@ -105,7 +105,7 @@ class FarmerPostingsController {
             const result = await FarmerPosting.find();
             let cropIds = []
             let userIds = []
-            console.log(result.length);
+          
             if (result.length > 0) {
                 for (let i = 0; i < result.length; i++) { // MANIPULATING THE STATIONS OBJECT
                     const userDetails = await Users.find({ PhoneNumber: result[i].UserId });
@@ -152,5 +152,108 @@ class FarmerPostingsController {
             res.status(400).send({ error: 'Error occured at backend!!' });
         }
     }
+    /*
+    async getPostDetails(req, res) {
+        let id = req.body.id;
+        try {
+
+            const result = await FarmerPostings.findById(id);
+            if (result) {
+                let cropIds = []
+                let userIds = []
+                for (let i = 0; i < result.length; i++) { // MANIPULATING THE STATIONS OBJECT
+                    const userDetails = await Users.find({ PhoneNumber: result[i].UserId });
+                    const cropDetails = await Crops.find({ _id: result[i].CropId });
+                    if (userDetails && cropDetails) {
+                        cropIds.push(cropDetails[0]);
+                        userIds.push(userDetails[0]);
+                    }
+                }
+                // console.log(cropIds);
+                var tempData = [];
+                userIds.forEach((user, index) => { // ADDING STATION DETAILS TO THE OBJECT
+                    var tempObj = Object.assign({}, result[index]['_doc']);
+                    var tempUserDetails = Object.assign({}, user['_doc']);
+
+                    var tempcrop = Object.assign({}, cropIds[index]['_doc'])
+                    delete tempUserDetails['_id'];
+                    delete tempUserDetails['updatedAt'];
+                    delete tempUserDetails['createdAt'];
+                    delete tempUserDetails['EthId'];
+                    delete tempUserDetails['CompanyName'];
+                    delete tempUserDetails['PreviousOrders'];
+                    delete tempUserDetails['CurrentOrders'];
+                    delete tempUserDetails['Postings'];
+                    delete tempUserDetails['Requests'];
+                    delete tempcrop['_id'];
+                    delete tempcrop['updatedAt'];
+                    delete tempcrop['createdAt'];
+                    delete tempObj['UserId'];
+                    delete tempObj['CropId'];
+                    delete tempObj['PhoneNumber'];
+                    delete tempObj['updatedAt'];
+
+                    tempObj['User'] = tempUserDetails;
+                    tempObj['CropDetails'] = tempcrop;
+                    tempData.push(tempObj);
+                });
+                //console.log("data is",tempData);
+                res.status(200).send({ data: tempData });
+            }
+            else {
+                const result = await CompanyPostings.findById(id);
+                let cropIds = []
+                let userIds = []
+                console.log(result.length);
+                if (result) {
+                    for (let i = 0; i < result.length; i++) { // MANIPULATING THE STATIONS OBJECT
+                        const userDetails = await Users.find({ PhoneNumber: result[i].UserId });
+                        const cropDetails = await Crops.find({ _id: result[i].CropId });
+                        if (userDetails && cropDetails) {
+                            cropIds.push(cropDetails[0]);
+                            userIds.push(userDetails[0]);
+                        }
+                    }
+                    // console.log(cropIds);
+                    var tempData = [];
+                    userIds.forEach((user, index) => { // ADDING STATION DETAILS TO THE OBJECT
+                        var tempObj = Object.assign({}, result[index]['_doc']);
+                        var tempUserDetails = Object.assign({}, user['_doc']);
+
+                        var tempcrop = Object.assign({}, cropIds[index]['_doc'])
+                        delete tempUserDetails['_id'];
+                        delete tempUserDetails['updatedAt'];
+                        delete tempUserDetails['createdAt'];
+                        delete tempUserDetails['EthId'];
+                        delete tempUserDetails['CompanyName'];
+                        delete tempUserDetails['PreviousOrders'];
+                        delete tempUserDetails['CurrentOrders'];
+                        delete tempUserDetails['Postings'];
+                        delete tempUserDetails['Requests'];
+                        delete tempcrop['_id'];
+                        delete tempcrop['updatedAt'];
+                        delete tempcrop['createdAt'];
+                        delete tempObj['UserId'];
+                        delete tempObj['CropId'];
+                        delete tempObj['PhoneNumber'];
+                        delete tempObj['updatedAt'];
+
+                        tempObj['User'] = tempUserDetails;
+                        tempObj['CropDetails'] = tempcrop;
+                        tempData.push(tempObj);
+                    });
+                    //console.log("data is",tempData);
+                    res.status(200).send({ data: tempData });
+                }
+                else {
+                    res.status(200).send({ data: [] });
+                }
+            }
+        }
+        catch (error) {
+            console.log(error)
+            res.status(400).send({ error: 'Error occured at backend!!' });
+        }
+    }*/
 }
 module.exports = new FarmerPostingsController();

@@ -199,7 +199,7 @@ class RequestsController {
                     tempObj['User'] = tempUserDetails;
                     tempData.push(tempObj);
                 });
-                console.log("Data", tempData);
+
                 res.status(200).send({ data: tempData });
             } else {
                 res.status(200).send({ data: [] });
@@ -281,7 +281,7 @@ class RequestsController {
                     tempObj['User'] = tempUserDetails;
                     tempData.push(tempObj);
                 });
-                console.log("Data", tempData);
+
                 res.status(200).send({ data: tempData });
             } else {
                 res.status(200).send({ data: [] });
@@ -299,22 +299,22 @@ class RequestsController {
     // Deprecated in favour of getAllRequestsUser
     async getApprovedRequests(req, res) {
         try {
-            var isFarmer = req.body.user.IsFarmer;
-
-            // var PostingId = req.body.PostingId;
-            var PhoneNumber = req.body.user.PhoneNumber;
             var postDetails;
+            var isFarmer = req.body.user.IsFarmer;
+            var RequestTargetId = req.body.user.PhoneNumber;
+            var PostingId = req.body.PostingId;
+
             // Get All Requests from MongoDB
-            const result = await Request.find({ RequestInitiatorId: PhoneNumber, RequestStatus: RequestStatus.Accepted });
+            const result = await Request.find({PostingId: PostingId, RequestStatus: RequestStatus.Accepted });
             // To store Post IDs
             let postIds = [];
-            // Delete this l8r
-            let croDetailArray = [];
-
+            let requestorDetails=[];
             // If there are any Requests with given filter
+
             if (result.length > 0) {
                 // Loop to add all posts to postIds
                 for (let i = 0; i < result.length; i++) {
+                    let requestInitiatorDetails = await Users.find({ PhoneNumber: result[i].RequestInitiatorId });
 
                     // If user is a farmer then all the requests will be made to Company Postings and vice versa
                     if (isFarmer) {
@@ -323,57 +323,44 @@ class RequestsController {
                         // Get Farmer Posting Details from MongoDB
                         postDetails = await FarmerPostings.find({ _id: result[i]["_doc"].PostingId });
                     }
-
                     // Push Post ID into postIds
                     if (postDetails) {
-                        // Get Details of Crop by using the Crop Id in the Posting Model
-                        const cropDetails = await Crops.find({ _id: postDetails[0].CropId });
-
-                        // Log the Post Details
-                        console.log("Post Details [0]: ", postDetails[0]);
-
-                        // Log the Crop Details
-                        console.log("Crop Details: ", cropDetails);
-
-                        // Push Post IDs into the Array
                         postIds.push(postDetails[0]);
-
-                        // Push Crop IDs into the Array
-
-
-                        console.log(postDetails[0].CropId);
+                    }
+                    if (requestInitiatorDetails) {
+                        requestorDetails.push(requestInitiatorDetails[0]);
+                    }
+                    else {
+                        requestorDetails({});
                     }
                 }
-                console.log("postIds: ", postIds);
+
                 var tempData = [];
                 postIds.forEach((post, index) => {
                     // Temporary container to hold Request Details
                     var tempObj = Object.assign({}, result[index]['_doc']);
-
-                    console.log("tempObj: ", tempObj);
-                    // Temporary container to hold User Details
+                    // Temperory container to hold User Details
                     var tempUserDetails = req.body.user;
                     // Temporary container to hold Post Details
-                    //  var tempPost = Object.assign({}, post['_doc']);
+                    // var tempPost = Object.assign({}, post['_doc']);
 
                     // Delete unnecessary data
                     delete tempUserDetails['_id'];
                     delete tempUserDetails['updatedAt'];
                     delete tempUserDetails['createdAt'];
                     delete tempUserDetails['EthId'];
-                    delete tempUserDetails['CompanyName'];
+                    // delete tempUserDetails['CompanyName'];
                     delete tempUserDetails['PreviousOrders'];
-                    // delete tempUserDetails['CurrentOrders'];
+                    delete tempUserDetails['CurrentOrders'];
                     delete tempUserDetails['Postings'];
                     delete tempObj['UserId'];
                     delete tempObj['CropId'];
                     delete tempObj['PhoneNumber'];
                     delete tempObj['updatedAt'];
-
+                    tempObj['BuyerDetails']=requestorDetails[index];
                     tempObj['User'] = tempUserDetails;
                     tempData.push(tempObj);
                 });
-                // console.log("Data", tempData);
                 res.status(200).send({ data: tempData });
             } else {
                 res.status(200).send({ data: [] });
@@ -400,7 +387,7 @@ class RequestsController {
             // To store Post IDs
             let postIds = [];
             let cropIds = [];
-
+            let sellerDetails = [];
             // If there are any Requests with given filter
             if (result.length > 0) {
                 // Declare Data Object
@@ -422,11 +409,12 @@ class RequestsController {
                         // Get Farmer Posting Details from MongoDB
                         postDetails = await FarmerPostings.find({ _id: result[i]["_doc"].PostingId });
                     }
-
                     // Push Post ID into postIds
                     if (postDetails) {
                         // Get Details of Crop by using the Crop Id in the Posting Model
                         cropDetails = await Crops.find({ _id: postDetails[0].CropId });
+
+                        let seller = await Users.find({ PhoneNumber: postDetails[0].UserId });
 
                         if (cropDetails) {
                             // Push Post IDs into the Array
@@ -434,6 +422,7 @@ class RequestsController {
 
                             // Push Crop IDs into the Array
                             cropIds.push(cropDetails[0]);
+                            sellerDetails.push(seller[0]);
                         } else {
                             res.status(400).send({ error: 'Crop Does Not Exist' });
                         }
@@ -459,7 +448,7 @@ class RequestsController {
                     // Add Crop Details to Object
                     // console.log("Crop Details: ", cropIds[index]);
                     tempDataObj.CropDetails = cropIds[index];
-                    
+                    tempDataObj.SellerDetails = sellerDetails[index];
                     // console.log("Temporary Data Object", tempDataObj);
 
                     // For Deleting Unnecessary Stuff
@@ -480,6 +469,7 @@ class RequestsController {
                 });
                 allRequestsDataObject.ApprovedRequests = acceptedRequests;
                 allRequestsDataObject.PendingRequests = pendingRequests;
+                console.log("data is", allRequestsDataObject);
                 res.status(200).send({ data: allRequestsDataObject });
             } else {
                 res.status(200).send({ data: [] });
