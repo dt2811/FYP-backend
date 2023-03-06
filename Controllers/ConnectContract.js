@@ -168,7 +168,7 @@ class ContractController {
         }
     }
 
-    async deleteRequest(req) {
+    async deleteRequest(RequestData) {
         try {
 
             // Initialize response object
@@ -178,11 +178,11 @@ class ContractController {
             const newcontract = this.contract;
 
             // Get the Request Id
-            var requestId = req.body.RequestId;
+            var requestId = RequestData.RequestId;
 
             // Call the Contract Function
             let transaction = await newcontract.deleteRequest(
-                requestId,
+                requestId
             );
 
             // Wait for reply
