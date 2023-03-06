@@ -56,11 +56,14 @@ class ContractController {
         return connectedEthContract;
     }
 
-    async initTransactionBlock(req, res) {
+    async initTransactionBlock(req) {
         try {
+            // Initialize response object
+            var blockchainResponse = {};
 
-            // console.log("Contract Deployed at Address: ", this.contract.address)
-            
+            // Print deplyed address
+            console.log("Contract Deployed at Address: ", this.contract.address);
+
             // Get the deployed contract
             const newcontract = this.contract;
 
@@ -98,12 +101,22 @@ class ContractController {
                 // Check Point for Transaction Reply
                 // console.log("Checkpoint #2: ", transactionReply);
 
-                res.status(200).send({ message: 'Transaction Added to Blockchain', data: TransactionResponse });
-                return;
+                blockchainResponse.status = 'Successful';
+                blockchainResponse.message = 'Transaction Added to Blockchain';
+                blockchainResponse.data = TransactionResponse;
+
+                // OG response
+                // res.status(200).send({ message: 'Transaction Added to Blockchain', data: TransactionResponse });
+                return blockchainResponse;
             }
         } catch (error) {
             console.log(error)
-            res.status(400).send({ error: 'Contract Error!' });
+
+            blockchainResponse.status = 'Unsuccessful';
+            blockchainResponse.message = 'Contract Error!';
+            // OG Response
+            // res.status(400).send({ error: 'Contract Error!' });
+            return blockchainResponse;
         }
     }
 
@@ -153,8 +166,12 @@ class ContractController {
         }
     }
 
-    async deleteRequest() {
+    async deleteRequest(req) {
         try {
+
+            // Initialize response object
+            var blockchainResponse = {};
+
             // Get Deployed Contract
             const newcontract = this.contract;
 
@@ -169,13 +186,25 @@ class ContractController {
             // Wait for reply
             var transactionReply = await transaction.wait();
             if (transactionReply) {
-                res.status(200).send({ message: 'Transaction Deleted', data: transactionReply });
-                return;
+                // OG Res
+                // res.status(200).send({ message: 'Transaction Deleted', data: transactionReply });
+
+                blockchainResponse.status = "Successful";
+                blockchainResponse.message = "Transaction Deleted";
+                blockchainResponse.data = transactionReply;
+                return blockchainResponse;
             }
             return;
         } catch (error) {
+            // Log error to console
             console.log(error)
-            res.status(400).send({ error: 'Contract Error!' });
+
+            // Fill up response object
+            blockchainResponse.status = "Unsuccessful";
+            blockchainResponse.message = "Contract Error!";
+            // res.status(400).send({ error: 'Contract Error!' });
+
+            return blockchainResponse;
         }
     }
 }
