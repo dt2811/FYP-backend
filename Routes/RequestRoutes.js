@@ -11,4 +11,5 @@ requestRouter.get('/get-requests-user', AuthMiddleWare, RequestsController.getAl
 requestRouter.post('/create-request', AuthMiddleWare, NewRequestValidationMiddleware, RequestsController.createNewRequest);
 requestRouter.put('/accept-request', AuthMiddleWare, RequestsController.acceptRequest);
 requestRouter.put('/reject-request', AuthMiddleWare, RequestsController.rejectRequest);
+requestRouter.delete('/delete-request', AuthMiddleWare, RequestsController.deleteRequest);
 module.exports = requestRouter;

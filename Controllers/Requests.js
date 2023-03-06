@@ -2,6 +2,7 @@ const Request = require('../Models/Requests');
 const Users = require('../Models/User');
 const FarmerPostings = require('../Models/FarmerPostings');
 const CompanyPostings = require('../Models/CompanyPostings');
+const BlockchainController = require('../Controllers/ConnectContract');
 const Crops = require('../Models/Crop');
 const RequestStatus = Object.freeze({
     Pending: 'Pending',
@@ -23,6 +24,8 @@ class RequestsController {
 
             if (isValid) {
                 var result;
+                var blockchainResult;
+                var blockchainRequest = {};
                 // If the user is a Farmer, then he can make requests only to Company Postings and vice versa
                 if (isFarmer) {
                     // Get Company Posting Details from MongoDB
@@ -35,6 +38,7 @@ class RequestsController {
                     // Get the Phone Number of the User that has made the posting (i.e Target User)
                     var TargetUserId = result.UserId;
 
+                    console.log("JOJOJOJO");
                     // Create Request Object 
                     const request = new Request({
                         // RequestInitiatorId -> The Phone Number of the user who has made the request (i.e. Initiator)
@@ -47,18 +51,57 @@ class RequestsController {
                         MessageFromRequestor: RequestData.Message,
                         // RequestStatus -> The Status of the request. Initialized with Pending, is Accepted when Target User accepts it, is Rejected when Target User rejects it
                         RequestStatus: RequestStatus.Pending
-                    });
+                    }); 
+
+                    // Log the newly created request to the console
+                    // console.log("New Request: ", request);
 
                     // Save the Request
                     result = await request.save();
 
                     // console.log("Get Result here", result);
 
+                    // Generate the blockchain request object
+
+                    // Get time in epoch
+                    blockchainRequest.createdAt = Math.floor(new Date().getTime() / 1000);
+
+                    // Assign the Farmer and Company IDs correctly
+                    if (isFarmer) {
+                        blockchainRequest.FarmerId = RequestData.RequestInitiatorId;
+                        blockchainRequest.CompanyId = TargetUserId;
+                    } else {
+                        blockchainRequest.FarmerId = TargetUserId;
+                        blockchainRequest.CompanyId = RequestData.RequestInitiatorId;
+                    }
+
+                    // Get the details of the newly made Request
+                    var tempObj = Object.assign({}, request['_doc']);
+
+                    // Convert the ObjectId object to a string for parsing by the blockchain
+                    blockchainRequest.RequestId = tempObj['_id'].toString();
+
+                    // Log the Blockchain Request Body to the console
+                    console.log("Blockchain Request: ", blockchainRequest);
+
+                    // Call blockchain function here
+                    blockchainResult = await BlockchainController.initTransactionBlock(blockchainRequest);
+
+                    // Check response received from blockchain 
+                    // console.log("Blockchain Response: ", blockchainResult);
+
+                    //ADD ERROR HANDLING FOR BLOCKCHAIN STUFF
+                    if (blockchainResult.status == "Unsuccessful"){
+                        throw new Error(blockchainResult.message);
+                    } else {
+                        // Log Successful Reply to console
+                        console.log("Status: ", blockchainResult.status);
+                        console.log("Mesage: ", blockchainResult.message);
+                        console.log("Data: ", blockchainResult.data);
+                    }
+
                     // Get all existing requests from the User
                     var tempArray = Array.from(req.body.user.Requests);
-
-                    // Get the details of the newly meade Request
-                    var tempObj = Object.assign({}, result['_doc']);
 
                     // Add the ID of the new Request to the array
                     tempArray.push(tempObj['_id']);
@@ -68,7 +111,10 @@ class RequestsController {
 
                     // console.log("Get User here", result);
                     if (result) {
+                        // Assign the result to an empty object 
                         tempObj = Object.assign({}, result['_doc']);
+
+                        // HTTP 200 Response
                         res.status(200).send({ message: 'Post Added Successfully!', data: tempObj });
                         return;
                     } else {
@@ -116,15 +162,37 @@ class RequestsController {
     }
 
     async deleteRequest(req, res) {
-        var RequestId = req.body.id;
+        var blockchainRequest = {};
+        var blockchainResult;
+        var RequestId = req.body.RequestId;
         var PhoneNumber = req.body.user.PhoneNumber;
         try {
             var result = await Request.deleteOne({ _id: RequestId, UserId: PhoneNumber });
+
+            //
+            blockchainRequest.RequestId = RequestId;
+
+            // Call blockchain function here
+            blockchainResult = await BlockchainController.deleteRequest(blockchainRequest);
+
+            // Check response received from blockchain 
+            // console.log("Blockchain Response: ", blockchainResult);
+
+            //ADD ERROR HANDLING FOR BLOCKCHAIN STUFF
+            if (blockchainResult.status == "Unsuccessful"){
+                throw new Error(blockchainResult.message);
+            } else {
+                // Log Successful Reply to console
+                console.log("Status: ", blockchainResult.status);
+                console.log("Mesage: ", blockchainResult.message);
+                console.log("Data: ", blockchainResult.data);
+            }
+
             var tempArray = Array.from(req.body.user.Requests);
             tempArray.pop(result._id);
             result = Users.findOneAndUpdate({ PhoneNumber: { PhoneNumber } }, { Requests: tempArray });
             if (result) {
-                res.status(200).send({ msg: 'Request deleted' });
+                res.status(200).send({ message: 'Request deleted' });
             }
             else {
                 res.status(400).send({ error: "Error occured while saving at backend" });
