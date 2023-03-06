@@ -27,19 +27,19 @@ class ContractController {
     init() {
         // For Deployment Purposes on Infura Goerli Network
         const contractEndpoint = process.env.GORLI_ETH_ENDPOINT;
-        const walletPrivateKey = process.env.ETHEREUM_ACCOUNT_PRIVATE_KEY;
-        const contractAddress = process.env.DEPLOYED_CONTRACT_ADDRESS;
+        // const walletPrivateKey = process.env.ETHEREUM_ACCOUNT_PRIVATE_KEY;
+        // const contractAddress = process.env.DEPLOYED_CONTRACT_ADDRESS;
 
 
         // For Testing Purposes on Ganache Local Blockchain 
-        // const walletPrivateKey = process.env.ETHEREUM_ACCOUNT_PRIVATE_KEY_GANACHE;
-        // const contractAddress = process.env.DEPLOYED_CONTRACT_ADDRESS_GANACHE;
+        const walletPrivateKey = process.env.ETHEREUM_ACCOUNT_PRIVATE_KEY_GANACHE;
+        const contractAddress = process.env.DEPLOYED_CONTRACT_ADDRESS_GANACHE;
 
         // For Deployment Purposes on Infura Goerli Network
-        const ethProvider = new ethers.providers.JsonRpcProvider(contractEndpoint);
+        // const ethProvider = new ethers.providers.JsonRpcProvider(contractEndpoint);
 
         // For Testing Purposes on Ganache Local Blockchain
-        // const ethProvider = new ethers.providers.JsonRpcProvider("HTTP://127.0.0.1:7545");
+        const ethProvider = new ethers.providers.JsonRpcProvider("HTTP://127.0.0.1:7545");
 
         // Create new Wallet instance for signing transactions to the Blockchain
         const wallet = new ethers.Wallet(walletPrivateKey, ethProvider);
@@ -56,7 +56,7 @@ class ContractController {
         return connectedEthContract;
     }
 
-    async initTransactionBlock(req) {
+    async initTransactionBlock(RequestData) {
         try {
             // Initialize response object
             var blockchainResponse = {};
@@ -67,11 +67,13 @@ class ContractController {
             // Get the deployed contract
             const newcontract = this.contract;
 
-            // Get the Data Object from the Middleware
-            var RequestData = req.body.data;
+            // Get the Data Object from the Middleware (Dead now because there's no middleware involved now)
+            // var RequestData = req.body.data;
 
             // Create Empty response object
             var TransactionResponse = {};
+
+            console.log(RequestData.RequestId);
 
             // Call the initTransactionBlock function
             let transaction = await newcontract.initTransactionBlock(
