@@ -68,10 +68,10 @@ class RequestsController {
 
                     // Assign the Farmer and Company IDs correctly
                     if (isFarmer) {
-                        blockchainRequest.FarmerId = RequestData.RequestInitiatorId;
+                        blockchainRequest.FarmerId = (RequestData.RequestInitiatorId.toString());
                         blockchainRequest.CompanyId = TargetUserId;
                     } else {
-                        blockchainRequest.FarmerId = TargetUserId;
+                        blockchainRequest.FarmerId = (TargetUserId.toString());
                         blockchainRequest.CompanyId = RequestData.RequestInitiatorId;
                     }
 
@@ -192,6 +192,47 @@ class RequestsController {
             tempArray.pop(result._id);
             result = Users.findOneAndUpdate({ PhoneNumber: { PhoneNumber } }, { Requests: tempArray });
             if (result) {
+                res.status(200).send({ message: 'Request deleted' });
+            }
+            else {
+                res.status(400).send({ error: "Error occured while saving at backend" });
+            }
+        } catch (error) {
+            console.log(error);
+            res.status(400).send({ error: 'Error occured at backend!!' });
+        }
+    }
+
+    async getRequestDetailsFromBlockchain(req, res) {
+        var blockchainRequest = {};
+        var blockchainResult;
+        var RequestId = req.body.RequestId;
+        try {
+            // var result = await Request.deleteOne({ _id: RequestId, UserId: PhoneNumber });
+
+            //
+            blockchainRequest.RequestId = RequestId;
+
+            // Call blockchain function here
+            blockchainResult = await BlockchainController.getRequestDetails(blockchainRequest);
+
+            // Check response received from blockchain 
+            console.log("Blockchain Response: ", blockchainResult);
+
+            //ADD ERROR HANDLING FOR BLOCKCHAIN STUFF
+            if (blockchainResult.status == "Unsuccessful"){
+                throw new Error(blockchainResult.message);
+            } else {
+                // Log Successful Reply to console
+                console.log("Status: ", blockchainResult.status);
+                console.log("Mesage: ", blockchainResult.message);
+                console.log("Data: ", blockchainResult.data);
+            }
+
+            // var tempArray = Array.from(req.body.user.Requests);
+            // tempArray.pop(result._id);
+            // result = Users.findOneAndUpdate({ PhoneNumber: { PhoneNumber } }, { Requests: tempArray });
+            if (true) {
                 res.status(200).send({ message: 'Request deleted' });
             }
             else {

@@ -85,9 +85,29 @@ module.exports = {
       network_id: 5, // Goerli's Network ID
       chain_id: 5, // Goerli's Chain ID
       gas: 5500000, // Gas Limit used for Deploys
+      gasPrice: 20000000000,
+      networkCheckTimeout: 10000,
       confirmations: 2, // No. of confirations to wait before deployments
       timeoutblocks: 200, // No. of blocks before a deployment times out
       skipDryRun: true
+    },
+    gorli: {
+       host: "127.0.0.1",     // Localhost (default: none)
+       port: 7545,            // Standard Ethereum port (default: none)
+       network_id: "*",       // Any network (default: none)
+      
+    },
+    sepolia:{
+      provider: () => new HDWalletProvider({
+        privateKeys: privateKey,
+        providerOrUrl: 'https://sepolia.infura.io/v3/' + infuraKey
+      }),
+      network_id: 11155111,
+      chain_id: 11155111,
+      gas: 5500000, // Gas Limit used for Deploys
+      confirmations: 2, // No. of confirations to wait before deployments
+      timeoutblocks: 200, // No. of blocks before a deployment times out
+      networkCheckTimeout: 10000,
     }
   },
 

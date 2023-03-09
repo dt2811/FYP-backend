@@ -27,19 +27,19 @@ class ContractController {
     init() {
         // For Deployment Purposes on Infura Goerli Network
         const contractEndpoint = process.env.GORLI_ETH_ENDPOINT;
-        // const walletPrivateKey = process.env.ETHEREUM_ACCOUNT_PRIVATE_KEY;
-        // const contractAddress = process.env.DEPLOYED_CONTRACT_ADDRESS;
+        const walletPrivateKey = process.env.ETHEREUM_ACCOUNT_PRIVATE_KEY;
+        const contractAddress = process.env.DEPLOYED_CONTRACT_ADDRESS;
 
 
         // For Testing Purposes on Ganache Local Blockchain 
-        const walletPrivateKey = process.env.ETHEREUM_ACCOUNT_PRIVATE_KEY_GANACHE;
-        const contractAddress = process.env.DEPLOYED_CONTRACT_ADDRESS_GANACHE;
+        // const walletPrivateKey = process.env.ETHEREUM_ACCOUNT_PRIVATE_KEY_GANACHE;
+        // const contractAddress = process.env.DEPLOYED_CONTRACT_ADDRESS_GANACHE;
 
         // For Deployment Purposes on Infura Goerli Network
-        // const ethProvider = new ethers.providers.JsonRpcProvider(contractEndpoint);
+        const ethProvider = new ethers.providers.JsonRpcProvider(contractEndpoint);
 
         // For Testing Purposes on Ganache Local Blockchain
-        const ethProvider = new ethers.providers.JsonRpcProvider("HTTP://127.0.0.1:7545");
+        // const ethProvider = new ethers.providers.JsonRpcProvider("HTTP://127.0.0.1:7545");
 
         // Create new Wallet instance for signing transactions to the Blockchain
         const wallet = new ethers.Wallet(walletPrivateKey, ethProvider);
@@ -73,7 +73,8 @@ class ContractController {
             // Create Empty response object
             var TransactionResponse = {};
 
-            console.log(RequestData.RequestId);
+            // Log the incoming Request data to the Console
+            // console.log(RequestData);
 
             // Call the initTransactionBlock function
             let transaction = await newcontract.initTransactionBlock(
@@ -165,6 +166,49 @@ class ContractController {
         } catch (error) {
             console.log(error)
             res.status(400).send({ error: 'Contract Error!' });
+        }
+    }
+
+    async getRequestDetails(RequestData) {
+        try {
+
+            // Initialize response object
+            var blockchainResponse = {};
+
+            // Get Deployed Contract
+            const newcontract = this.contract;
+
+            // Get the Request Id
+            var requestId = RequestData.RequestId;
+
+            // Call the Contract Function
+            let transaction = await newcontract.TransactionLedger(
+                requestId
+            );
+
+            console.log("HIII: ", transaction);
+            // Wait for reply
+       
+            if (transaction) {
+                // OG Res
+                // res.status(200).send({ message: 'Transaction Deleted', data: transactionReply });
+
+                blockchainResponse.status = "Successful";
+                blockchainResponse.message = "Transaction Details Retrieved";
+                blockchainResponse.data = transactionReply;
+                return blockchainResponse;
+            }
+            return;
+        } catch (error) {
+            // Log error to console
+            console.log(error)
+
+            // Fill up response object
+            blockchainResponse.status = "Unsuccessful";
+            blockchainResponse.message = "Contract Error!";
+            // res.status(400).send({ error: 'Contract Error!' });
+
+            return blockchainResponse;
         }
     }
 
