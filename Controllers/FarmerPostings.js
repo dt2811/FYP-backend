@@ -1,7 +1,7 @@
 const FarmerPosting = require('../Models/FarmerPostings');
 const Users = require('../Models/User');
 const Crops = require('../Models/Crop');
-
+const Request = require('../Models/Requests');
 class FarmerPostingsController {
     async createNewPost(req, res) {  // Create new post
         try {
@@ -87,8 +87,10 @@ class FarmerPostingsController {
             var result = await FarmerPosting.deleteOne({ _id: id, UserId: PhoneNumber });
             var tempArray = Array.from(req.body.user.Postings);
             tempArray.pop(result._id);
-            result = Users.findOneAndUpdate({ PhoneNumber: PhoneNumber }, { Postings: tempArray });
-            if (result) {
+            var id=result._id;
+            result = await Users.findOneAndUpdate({ PhoneNumber: PhoneNumber }, { Postings: tempArray });
+            var res1=await Request.deleteMany({PostingId: id});
+            if (res1) {
                 res.status(200).send({ msg: 'post deleted' });
             }
             else {

@@ -128,6 +128,7 @@ class UserController {
 
 
     async requestOtp(req, res) {  // SEND OTP AFTER VERIFYINH
+        try {
         let PhoneNumber = req.body.PhoneNumber;
         console.log(req.body);
         const regex = /^(\+91[\-\s]?)?[0]?(91)?[789]\d{9}$/;
@@ -143,7 +144,7 @@ class UserController {
 
                     //res.cookie(PhoneNumber.toString(), hash, options) // ADDING THE OTP IN COOKIE FOR T MINUTES
                     console.log(otp);
-                    try {
+                 
                         var otp = new OTPModel({ PhoneNumber: PhoneNumber, OTP: hash });
                         var result = await otp.save();
                         if (result) {
@@ -155,19 +156,6 @@ class UserController {
 
                         }
                         return;
-
-                    }
-                    catch (error) {
-                        // console.log(error);
-                        var deleteOtp = await OTPModel.deleteOne({ PhoneNumber: PhoneNumber });
-                        if (deleteOtp) {
-                            res.status(400).send({ error: 'Try Again !!' });
-                        }
-                        else {
-                            console.log(error);
-                            res.status(400).send({ error: 'Could not send OTP error occured!!' });
-                        }
-                    }
                 }
                 else {
                     res.status(400).send({ error: 'Could not send OTP error occured!!' });
@@ -179,7 +167,23 @@ class UserController {
             res.status(400).send({ error: 'Please send valid PhoneNumber' });
             return;
         }
+        else{
         res.status(400).send({ error: 'Could not read !!Please send valid PhoneNumber' });
+    }
+        
+    }
+         
+        catch (error) {
+            // console.log(error);
+            var deleteOtp = await OTPModel.deleteOne({ PhoneNumber: PhoneNumber });
+            if (deleteOtp) {
+                res.status(400).send({ error: 'Try Again !!' });
+            }
+            else {
+                console.log(error);
+                res.status(400).send({ error: 'Could not send OTP error occured!!' });
+            }
+        }
     }
 
     async updateUserDetails(req, res) {
