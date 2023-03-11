@@ -87,9 +87,29 @@ class FarmerPostingsController {
             var result = await FarmerPosting.deleteOne({ _id: id, UserId: PhoneNumber });
             var tempArray = Array.from(req.body.user.Postings);
             tempArray.pop(result._id);
-            var id=result._id;
-            result = await Users.findOneAndUpdate({ PhoneNumber: PhoneNumber }, { Postings: tempArray });
-            var res1=await Request.deleteMany({PostingId: id});
+           result = await Users.findOneAndUpdate({ PhoneNumber: PhoneNumber }, { Postings: tempArray });
+            var res2= await Request.find({PostingId: id});
+            var requests= await Users.find();
+            var res1=true;
+            let flag=false;
+            for(let i=0;i<requests.length;i++){
+                var tempArray = Array.from(requests[i].Requests);
+                flag=false
+                for(let j=0;j<res2.length;j++){
+                    var _id=res2[j]._id
+                    for(let k=0;k<tempArray.length;k++){
+                    if(tempArray[k].equals(_id)){
+                        tempArray.pop(_id);
+                        flag=true;
+                        break;
+                    }
+                }
+                }          
+                if(flag==true){    
+                result = await Users.findOneAndUpdate({ PhoneNumber: requests[i].PhoneNumber }, { Requests:  tempArray});  
+                }
+            }
+                var res1=await Request.deleteMany({PostingId: id});        
             if (res1) {
                 res.status(200).send({ msg: 'post deleted' });
             }

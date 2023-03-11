@@ -127,11 +127,12 @@ class UserController {
     }
 
 
-    async requestOtp(req, res) {  // SEND OTP AFTER VERIFYINH
-        try {
+    async requestOtp(req, res) { 
         let PhoneNumber = req.body.PhoneNumber;
         console.log(req.body);
-        const regex = /^(\+91[\-\s]?)?[0]?(91)?[789]\d{9}$/;
+        const regex = /^(\+91[\-\s]?)?[0]?(91)?[789]\d{9}$/; // SEND OTP AFTER VERIFYINH
+        try {
+      
         if (PhoneNumber) {
             if (regex.test(PhoneNumber) == true) {
                 var otp = Math.floor(1000 + Math.random() * 9000).toString();
