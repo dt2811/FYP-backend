@@ -25,21 +25,19 @@ class ContractController {
     }
 
     init() {
-        // For Deployment Purposes on Infura Goerli Network
+        // For Deployment on Goerli Testnet / Sepolia Testnet 
         // const contractEndpoint = process.env.GORLI_ETH_ENDPOINT;
         // const walletPrivateKey = process.env.ETHEREUM_ACCOUNT_PRIVATE_KEY;
         // const contractAddress = process.env.DEPLOYED_CONTRACT_ADDRESS;
-
+       
 
         // For Testing Purposes on Ganache Local Blockchain 
+        const contractEndpoint = process.env.GANACHE_ETH_ENDPOINT;
         const walletPrivateKey = process.env.ETHEREUM_ACCOUNT_PRIVATE_KEY_GANACHE;
         const contractAddress = process.env.DEPLOYED_CONTRACT_ADDRESS_GANACHE;
 
-        // For Deployment Purposes on Infura Goerli Network
-        // const ethProvider = new ethers.providers.JsonRpcProvider(contractEndpoint);
-
-        // For Testing Purposes on Ganache Local Blockchain
-        const ethProvider = new ethers.providers.JsonRpcProvider("HTTP://127.0.0.1:7545");
+        // For Testing Purposes 
+        const ethProvider = new ethers.providers.JsonRpcProvider(contractEndpoint);
 
         // Create new Wallet instance for signing transactions to the Blockchain
         const wallet = new ethers.Wallet(walletPrivateKey, ethProvider);
@@ -123,7 +121,7 @@ class ContractController {
         }
     }
 
-    async initPostBlock(RequestData){
+    async initPostBlock(RequestData) {
         try {
             // Initialize response object
             var blockchainResponse = {};
@@ -166,15 +164,26 @@ class ContractController {
             );
 
             if (transactionReply) {
-                // TransactionResponse.TransactionId = ethers.utils.formatUnits(transactionReply[0], 0);
-                // TransactionResponse.RequestId = transactionReply[3];
-                // TransactionResponse.FarmerId = transactionReply[1];
-                // TransactionResponse.CompanyId = transactionReply[2];
+
+                // Checkpoint #2:  [
+                //     BigNumber { _hex: '0x00', _isBigNumber: true },
+                //     false,
+                //     '8356968871',
+                //     '640c5d04ce2a7455e1d7edb5',
+                //     '150kg',
+                //     'Description: Made by Company Om Turmerix 2',
+                //     'Rs. 100000',
+                //     0,
+                //     postingNo: BigNumber { _hex: '0x00', _isBigNumber: true },
+                //     isFarmerPosting: false,
+                //     postingStatus: 0
+                //   ]
+
+                TransactionResponse.BlockchainPostingID = ethers.utils.formatUnits(transactionReply[0], 0);
+                TransactionResponse.UserId = transactionReply[2];
 
                 // Check Point for Transaction Reply
-                console.log("Checkpoint #2: ", transactionReply);
-
-                console.log("jidos: ", transactionReply[3]);
+                // console.log("Checkpoint #2: ", transactionReply);
 
                 blockchainResponse.status = 'Successful';
                 blockchainResponse.message = 'Transaction Added to Blockchain';
@@ -301,7 +310,7 @@ class ContractController {
 
             console.log("HIII: ", transaction);
             // Wait for reply
-       
+
             if (transaction) {
                 // OG Res
                 // res.status(200).send({ message: 'Transaction Deleted', data: transactionReply });
