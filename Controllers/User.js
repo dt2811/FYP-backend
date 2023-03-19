@@ -253,13 +253,10 @@ class UserController {
 
                         }
                     }
-                    console.log("yeh khali hai kya?",cropIds);
                     var tempData = [];
                     cropIds.forEach((crop, index) => { 
-                        console.log("error",result[index]['_doc'])
                         var tempObj = Object.assign({}, result[index]['_doc']);
                         var tempUserDetails = req.body.user;
-                        console.log("error hai ",crop);
                         var tempcrop = Object.assign({}, crop['_doc'])
                         delete tempUserDetails['_id'];
                         delete tempUserDetails['updatedAt'];

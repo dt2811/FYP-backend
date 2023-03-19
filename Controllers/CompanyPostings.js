@@ -25,7 +25,7 @@ class CompanyPostingsController {
                         Quantity: Quantity,
                         Price: Price,
                     });
-                    result = await posting.save(); // ADDING USER AFTER VALIDATIONS
+                    
 
 
                     // Blockchain starts here
@@ -59,7 +59,7 @@ class CompanyPostingsController {
                         console.log("Data: ", blockchainResult.data);
                     }
 
-
+                    result = await posting.save(); // ADDING USER AFTER VALIDATIONS
                     var tempArray = Array.from(req.body.user.Postings);
                     var tempObj = Object.assign({}, result['_doc']);
                     tempArray.push(tempObj['_id']);

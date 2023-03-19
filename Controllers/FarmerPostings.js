@@ -27,7 +27,6 @@ class FarmerPostingsController {
                         ImageUrls: ImageUrls,
                         Price: Price,
                     });
-                    // result = await posting.save(); // ADDING USER AFTER VALIDATIONS
 
                     var tempObj = Object.assign({}, posting['_doc']);
 
@@ -40,6 +39,7 @@ class FarmerPostingsController {
                     blockchainRequest.CropDetails = Details;
                     blockchainRequest.CropPrice = Price;
 
+                    
                     // Log the Blockchain Request Body to the console
                     console.log("Blockchain Request: ", blockchainRequest);
 
@@ -58,6 +58,8 @@ class FarmerPostingsController {
                         console.log("Message: ", blockchainResult.message);
                         console.log("Data: ", blockchainResult.data);
                     }
+
+                    result = await posting.save(); // ADDING USER AFTER VALIDATIONS
 
                     var tempArray = Array.from(req.body.user.Postings);
                     var tempObj = Object.assign({}, result['_doc']);
