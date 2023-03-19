@@ -38,7 +38,7 @@ class RequestsController {
                     // Get the Phone Number of the User that has made the posting (i.e Target User)
                     var TargetUserId = result.UserId;
 
-                    console.log("JOJOJOJO");
+                    // console.log("JOJOJOJO");
                     // Create Request Object 
                     const request = new Request({
                         // RequestInitiatorId -> The Phone Number of the user who has made the request (i.e. Initiator)
