@@ -85,7 +85,7 @@ module.exports = {
       network_id: 5, // Goerli's Network ID
       chain_id: 5, // Goerli's Chain ID
       gas: 5500000, // Gas Limit used for Deploys
-      gasPrice: 20000000000,
+      gasPrice: 30000000000,
       networkCheckTimeout: 10000,
       confirmations: 2, // No. of confirations to wait before deployments
       timeoutblocks: 200, // No. of blocks before a deployment times out
