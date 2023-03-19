@@ -26,15 +26,15 @@ class ContractController {
 
     init() {
         // For Deployment on Goerli Testnet / Sepolia Testnet 
-        // const contractEndpoint = process.env.GORLI_ETH_ENDPOINT;
-        // const walletPrivateKey = process.env.ETHEREUM_ACCOUNT_PRIVATE_KEY;
-        // const contractAddress = process.env.DEPLOYED_CONTRACT_ADDRESS;
+        const contractEndpoint = process.env.SEPOLIA_ETH_ENDPOINT;
+        const walletPrivateKey = process.env.ETHEREUM_ACCOUNT_PRIVATE_KEY;
+        const contractAddress = process.env.DEPLOYED_CONTRACT_ADDRESS_SEPOLIA;
        
 
         // For Testing Purposes on Ganache Local Blockchain 
-        const contractEndpoint = process.env.GANACHE_ETH_ENDPOINT;
-        const walletPrivateKey = process.env.ETHEREUM_ACCOUNT_PRIVATE_KEY_GANACHE;
-        const contractAddress = process.env.DEPLOYED_CONTRACT_ADDRESS_GANACHE;
+        // const contractEndpoint = process.env.GANACHE_ETH_ENDPOINT;
+        // const walletPrivateKey = process.env.ETHEREUM_ACCOUNT_PRIVATE_KEY_GANACHE;
+        // const contractAddress = process.env.DEPLOYED_CONTRACT_ADDRESS_GANACHE;
 
         // For Testing Purposes 
         const ethProvider = new ethers.providers.JsonRpcProvider(contractEndpoint);
