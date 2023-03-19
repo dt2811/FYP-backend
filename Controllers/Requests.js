@@ -96,7 +96,7 @@ class RequestsController {
                     } else {
                         // Log Successful Reply to console
                         console.log("Status: ", blockchainResult.status);
-                        console.log("Mesage: ", blockchainResult.message);
+                        console.log("Message: ", blockchainResult.message);
                         console.log("Data: ", blockchainResult.data);
                     }
 
