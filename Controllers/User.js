@@ -6,6 +6,7 @@ const OTPModel = require('../Models/OTP');
 const FarmerPosting = require('../Models/FarmerPostings');
 const CompanyPosting=require('../Models/CompanyPostings');
 const Crops = require('../Models/Crop');
+const TranslateJson=require('../Utils/Translate');
 require('dotenv').config();
 class UserController {
 
@@ -256,10 +257,10 @@ class UserController {
                     console.log("yeh khali hai kya?",cropIds);
                     var tempData = [];
                     cropIds.forEach((crop, index) => { 
-                        console.log("error",result[index]['_doc'])
+                       
                         var tempObj = Object.assign({}, result[index]['_doc']);
                         var tempUserDetails = req.body.user;
-                        console.log("error hai ",crop);
+                        
                         var tempcrop = Object.assign({}, crop['_doc'])
                         delete tempUserDetails['_id'];
                         delete tempUserDetails['updatedAt'];
@@ -282,6 +283,9 @@ class UserController {
                         tempData.push(tempObj);
                     });
                     //console.log("data is",tempData);
+                    
+                   // let data= await TranslateJson();
+                   
                     res.status(200).send({ data: tempData });
                 }
                 else {

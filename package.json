@@ -9,6 +9,8 @@
   "author": "Dhrumil Thakore",
   "license": "ISC",
   "dependencies": {
+    "@parvineyvazov/json-translator": "^1.6.3",
+    "@truffle/hdwallet-provider": "2.1.5",
     "bcrypt": "^5.0.1",
     "cookie-parser": "^1.4.6",
     "cors": "^2.8.5",
@@ -21,7 +23,6 @@
     "mongoose": "^6.5.1",
     "morgan": "^1.10.0",
     "nodemon": "^2.0.19",
-    "twilio": "^3.80.0",
-    "@truffle/hdwallet-provider": "2.1.5"
+    "twilio": "^3.80.0"
   }
 }
