@@ -2,6 +2,7 @@ const FarmerPosting = require('../Models/FarmerPostings');
 const Users = require('../Models/User');
 const Crops = require('../Models/Crop');
 const Request = require('../Models/Requests');
+const BlockchainController = require('../Controllers/ConnectContract');
 class FarmerPostingsController {
     async createNewPost(req, res) {  // Create new post
         try {
@@ -11,10 +12,12 @@ class FarmerPostingsController {
             var Quantity = req.body.Quantity;
             var ImageUrls = req.body.ImageUrls;
             var Price = req.body.Price;
-            var IsFarmer=req.body.user.IsFarmer;
+            var IsFarmer = req.body.user.IsFarmer;
             var isValid = req.body.validation['isValid'];
-            if (isValid === true && IsFarmer===true) {
+            if (isValid === true && IsFarmer === true) {
                 var result = await Crops.findById(CropId); // CHECKING IF THE CROP IS THERE OR NOT
+                var blockchainResult;
+                var blockchainRequest = {};
                 if (result) {
                     const posting = new FarmerPosting({
                         UserId: UserId,
@@ -24,10 +27,44 @@ class FarmerPostingsController {
                         ImageUrls: ImageUrls,
                         Price: Price,
                     });
+
+                    var tempObj = Object.assign({}, posting['_doc']);
+
+                    // Blockchain starts here
+                    blockchainRequest.IsFarmer = true;
+                    blockchainRequest.PostingID = tempObj['_id'].toString();
+                    blockchainRequest.UserId = UserId.toString();
+                    blockchainRequest.CropId = CropId;
+                    blockchainRequest.CropQuantity = Quantity;
+                    blockchainRequest.CropDetails = Details;
+                    blockchainRequest.CropPrice = Price;
+
+                    
+                    // Log the Blockchain Request Body to the console
+                    console.log("Blockchain Request: ", blockchainRequest);
+
+                    // Call blockchain function here
+                    blockchainResult = await BlockchainController.initPostBlock(blockchainRequest);
+
+                    // Check response received from blockchain 
+                    console.log("Blockchain Response: ", blockchainResult);
+
+                    //ADD ERROR HANDLING FOR BLOCKCHAIN STUFF
+                    if (blockchainResult.status == "Unsuccessful"){
+                        throw new Error(blockchainResult.message);
+                    } else {
+                        // Log Successful Reply to console
+                        console.log("Status: ", blockchainResult.status);
+                        console.log("Message: ", blockchainResult.message);
+                        console.log("Data: ", blockchainResult.data);
+                    }
+
                     result = await posting.save(); // ADDING USER AFTER VALIDATIONS
+
                     var tempArray = Array.from(req.body.user.Postings);
                     var tempObj = Object.assign({}, result['_doc']);
                     tempArray.push(tempObj['_id']);
+
                     result = await Users.findOneAndUpdate({ PhoneNumber: UserId }, { Postings: tempArray });
                     if (result) {
                         tempObj = Object.assign({}, result['_doc']);
@@ -87,29 +124,29 @@ class FarmerPostingsController {
             var result = await FarmerPosting.deleteOne({ _id: id, UserId: PhoneNumber });
             var tempArray = Array.from(req.body.user.Postings);
             tempArray.pop(result._id);
-           result = await Users.findOneAndUpdate({ PhoneNumber: PhoneNumber }, { Postings: tempArray });
-            var res2= await Request.find({PostingId: id});
-            var requests= await Users.find();
-            var res1=true;
-            let flag=false;
-            for(let i=0;i<requests.length;i++){
+            result = await Users.findOneAndUpdate({ PhoneNumber: PhoneNumber }, { Postings: tempArray });
+            var res2 = await Request.find({ PostingId: id });
+            var requests = await Users.find();
+            var res1 = true;
+            let flag = false;
+            for (let i = 0; i < requests.length; i++) {
                 var tempArray = Array.from(requests[i].Requests);
-                flag=false
-                for(let j=0;j<res2.length;j++){
-                    var _id=res2[j]._id
-                    for(let k=0;k<tempArray.length;k++){
-                    if(tempArray[k].equals(_id)){
-                        tempArray.pop(_id);
-                        flag=true;
-                        break;
+                flag = false
+                for (let j = 0; j < res2.length; j++) {
+                    var _id = res2[j]._id
+                    for (let k = 0; k < tempArray.length; k++) {
+                        if (tempArray[k].equals(_id)) {
+                            tempArray.pop(_id);
+                            flag = true;
+                            break;
+                        }
                     }
                 }
-                }          
-                if(flag==true){    
-                result = await Users.findOneAndUpdate({ PhoneNumber: requests[i].PhoneNumber }, { Requests:  tempArray});  
+                if (flag == true) {
+                    result = await Users.findOneAndUpdate({ PhoneNumber: requests[i].PhoneNumber }, { Requests: tempArray });
                 }
             }
-                var res1=await Request.deleteMany({PostingId: id});        
+            var res1 = await Request.deleteMany({ PostingId: id });
             if (res1) {
                 res.status(200).send({ msg: 'post deleted' });
             }
@@ -128,7 +165,7 @@ class FarmerPostingsController {
             const result = await FarmerPosting.find();
             let cropIds = []
             let userIds = []
-          
+
             if (result.length > 0) {
                 for (let i = 0; i < result.length; i++) { // MANIPULATING THE STATIONS OBJECT
                     const userDetails = await Users.find({ PhoneNumber: result[i].UserId });

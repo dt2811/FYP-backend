@@ -25,21 +25,19 @@ class ContractController {
     }
 
     init() {
-        // For Deployment Purposes on Infura Goerli Network
-        const contractEndpoint = process.env.GORLI_ETH_ENDPOINT;
+        // For Deployment on Goerli Testnet / Sepolia Testnet 
+        const contractEndpoint = process.env.SEPOLIA_ETH_ENDPOINT;
         const walletPrivateKey = process.env.ETHEREUM_ACCOUNT_PRIVATE_KEY;
-        const contractAddress = process.env.DEPLOYED_CONTRACT_ADDRESS;
-
+        const contractAddress = process.env.DEPLOYED_CONTRACT_ADDRESS_SEPOLIA;
+       
 
         // For Testing Purposes on Ganache Local Blockchain 
+        // const contractEndpoint = process.env.GANACHE_ETH_ENDPOINT;
         // const walletPrivateKey = process.env.ETHEREUM_ACCOUNT_PRIVATE_KEY_GANACHE;
         // const contractAddress = process.env.DEPLOYED_CONTRACT_ADDRESS_GANACHE;
 
-        // For Deployment Purposes on Infura Goerli Network
+        // For Testing Purposes 
         const ethProvider = new ethers.providers.JsonRpcProvider(contractEndpoint);
-
-        // For Testing Purposes on Ganache Local Blockchain
-        // const ethProvider = new ethers.providers.JsonRpcProvider("HTTP://127.0.0.1:7545");
 
         // Create new Wallet instance for signing transactions to the Blockchain
         const wallet = new ethers.Wallet(walletPrivateKey, ethProvider);
@@ -123,6 +121,130 @@ class ContractController {
         }
     }
 
+    async initPostBlock(RequestData) {
+        try {
+            // Initialize response object
+            var blockchainResponse = {};
+
+            // Print deplyed address
+            console.log("Contract Deployed at Address: ", this.contract.address);
+
+            // Get the deployed contract
+            const newcontract = this.contract;
+
+            // Get the Data Object from the Middleware (Dead now because there's no middleware involved now)
+            // var RequestData = req.body.data;
+
+            // Create Empty response object
+            var TransactionResponse = {};
+
+            // Log the incoming Request data to the Console
+            // console.log(RequestData);
+
+            // Call the initPostBlock function
+            let transaction = await newcontract.initPostBlock(
+                RequestData.IsFarmer,
+                RequestData.PostingID,
+                RequestData.UserId,
+                RequestData.CropId,
+                RequestData.CropQuantity,
+                RequestData.CropDetails,
+                RequestData.CropPrice
+            );
+
+            // Wait for the reply from Blockchain
+            var transactionReply = await transaction.wait();
+
+            // Check Point for Transaction Reply
+            // console.log("Checkpoint #1: ", transactionReply);
+
+            // Get the details of the TransactionLedger mapping from the Blockchain
+            transactionReply = await newcontract.PostingLedger(
+                RequestData.PostingID
+            );
+
+            if (transactionReply) {
+
+                // Checkpoint #2:  [
+                //     BigNumber { _hex: '0x00', _isBigNumber: true },
+                //     false,
+                //     '8356968871',
+                //     '640c5d04ce2a7455e1d7edb5',
+                //     '150kg',
+                //     'Description: Made by Company Om Turmerix 2',
+                //     'Rs. 100000',
+                //     0,
+                //     postingNo: BigNumber { _hex: '0x00', _isBigNumber: true },
+                //     isFarmerPosting: false,
+                //     postingStatus: 0
+                //   ]
+
+                TransactionResponse.BlockchainPostingID = ethers.utils.formatUnits(transactionReply[0], 0);
+                TransactionResponse.UserId = transactionReply[2];
+
+                // Check Point for Transaction Reply
+                // console.log("Checkpoint #2: ", transactionReply);
+
+                blockchainResponse.status = 'Successful';
+                blockchainResponse.message = 'Transaction Added to Blockchain';
+                blockchainResponse.data = TransactionResponse;
+
+                // OG response
+                // res.status(200).send({ message: 'Transaction Added to Blockchain', data: TransactionResponse });
+                return blockchainResponse;
+            }
+        } catch (error) {
+            console.log(error)
+
+            blockchainResponse.status = 'Unsuccessful';
+            blockchainResponse.message = 'Contract Error!';
+            // OG Response
+            // res.status(400).send({ error: 'Contract Error!' });
+            return blockchainResponse;
+        }
+    }
+
+    async deletePost(RequestData) {
+        try {
+
+            // Initialize response object
+            var blockchainResponse = {};
+
+            // Get Deployed Contract
+            const newcontract = this.contract;
+
+            // Get the Request Id
+            var postingId = RequestData.PostingID;
+
+            // Call the Contract Function
+            let transaction = await newcontract.deletePost(
+                postingId
+            );
+
+            // Wait for reply
+            var transactionReply = await transaction.wait();
+            if (transactionReply) {
+                // OG Res
+                // res.status(200).send({ message: 'Transaction Deleted', data: transactionReply });
+
+                blockchainResponse.status = "Successful";
+                blockchainResponse.message = "Posting Deleted";
+                blockchainResponse.data = transactionReply;
+                return blockchainResponse;
+            }
+            return;
+        } catch (error) {
+            // Log error to console
+            console.log(error)
+
+            // Fill up response object
+            blockchainResponse.status = "Unsuccessful";
+            blockchainResponse.message = "Contract Error!";
+            // res.status(400).send({ error: 'Contract Error!' });
+
+            return blockchainResponse;
+        }
+    }
 
 
     async acceptRequest(req, res) {
@@ -188,7 +310,7 @@ class ContractController {
 
             console.log("HIII: ", transaction);
             // Wait for reply
-       
+
             if (transaction) {
                 // OG Res
                 // res.status(200).send({ message: 'Transaction Deleted', data: transactionReply });
