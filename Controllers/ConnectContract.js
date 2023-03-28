@@ -21,6 +21,7 @@ class ContractController {
 
         // Bind Methods to the Class
         this.initTransactionBlock = this.initTransactionBlock.bind(this);
+        this.initPostBlock = this.initPostBlock.bind(this);
         this.deleteRequest = this.deleteRequest.bind(this);
     }
 
