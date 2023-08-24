@@ -4,9 +4,9 @@ const bcrypt = require('bcrypt');
 const Users = require('../Models/User');
 const OTPModel = require('../Models/OTP');
 const FarmerPosting = require('../Models/FarmerPostings');
-const CompanyPosting=require('../Models/CompanyPostings');
+const CompanyPosting = require('../Models/CompanyPostings');
 const Crops = require('../Models/Crop');
-const TranslateJson=require('../Utils/Translate');
+const TranslateJson = require('../Utils/Translate');
 require('dotenv').config();
 class UserController {
 
@@ -128,25 +128,25 @@ class UserController {
     }
 
 
-    async requestOtp(req, res) { 
+    async requestOtp(req, res) {
         let PhoneNumber = req.body.PhoneNumber;
         console.log(req.body);
         const regex = /^(\+91[\-\s]?)?[0]?(91)?[789]\d{9}$/; // SEND OTP AFTER VERIFYINH
         try {
-      
-        if (PhoneNumber) {
-            if (regex.test(PhoneNumber) == true) {
-                var otp = Math.floor(1000 + Math.random() * 9000).toString();
-                var isOTPSent = true
-                // var isOTPSent = sendOtp(PhoneNumber, otp);  // OTP FUNCTION
-                console.log(isOTPSent);
-                if (isOTPSent) {
-                    var hash = bcrypt.hashSync(otp, 10); // HASHING THE OTP 
+
+            if (PhoneNumber) {
+                if (regex.test(PhoneNumber) == true) {
+                    var otp = Math.floor(1000 + Math.random() * 9000).toString();
+                    var isOTPSent = true
+                    // var isOTPSent = sendOtp(PhoneNumber, otp);  // OTP FUNCTION
+                    console.log(isOTPSent);
+                    if (isOTPSent) {
+                        var hash = bcrypt.hashSync(otp, 10); // HASHING THE OTP 
 
 
-                    //res.cookie(PhoneNumber.toString(), hash, options) // ADDING THE OTP IN COOKIE FOR T MINUTES
-                    console.log(otp);
-                 
+                        //res.cookie(PhoneNumber.toString(), hash, options) // ADDING THE OTP IN COOKIE FOR T MINUTES
+                        console.log(otp);
+
                         var otp = new OTPModel({ PhoneNumber: PhoneNumber, OTP: hash });
                         var result = await otp.save();
                         if (result) {
@@ -158,23 +158,23 @@ class UserController {
 
                         }
                         return;
-                }
-                else {
-                    res.status(400).send({ error: 'Could not send OTP error occured!!' });
-                    return;
-                }
+                    }
+                    else {
+                        res.status(400).send({ error: 'Could not send OTP error occured!!' });
+                        return;
+                    }
 
 
+                }
+                res.status(400).send({ error: 'Please send valid PhoneNumber' });
+                return;
             }
-            res.status(400).send({ error: 'Please send valid PhoneNumber' });
-            return;
+            else {
+                res.status(400).send({ error: 'Could not read !!Please send valid PhoneNumber' });
+            }
+
         }
-        else{
-        res.status(400).send({ error: 'Could not read !!Please send valid PhoneNumber' });
-    }
-        
-    }
-         
+
         catch (error) {
             // console.log(error);
             var deleteOtp = await OTPModel.deleteOne({ PhoneNumber: PhoneNumber });
@@ -247,7 +247,7 @@ class UserController {
 
 
                 if (result.length > 0) {
-                    for (let i = 0; i < result.length; i++) { 
+                    for (let i = 0; i < result.length; i++) {
                         const cropDetails = await Crops.find({ _id: result[i]['_doc'].CropId });
                         if (cropDetails) {
                             cropIds.push(cropDetails[0]);
@@ -255,7 +255,7 @@ class UserController {
                         }
                     }
                     var tempData = [];
-                    cropIds.forEach((crop, index) => { 
+                    cropIds.forEach((crop, index) => {
                         var tempObj = Object.assign({}, result[index]['_doc']);
                         var tempUserDetails = req.body.user;
                         var tempcrop = Object.assign({}, crop['_doc'])
@@ -280,9 +280,8 @@ class UserController {
                         tempData.push(tempObj);
                     });
                     //console.log("data is",tempData);
-                    
-                   // let data= await TranslateJson();
-                   
+                    // Comment out if no transaltion
+                    // let data = await TranslateJson({ data: tempData });
                     res.status(200).send({ data: tempData });
                 }
                 else {
